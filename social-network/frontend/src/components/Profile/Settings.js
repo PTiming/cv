@@ -4,6 +4,23 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
 import './Profile.css';
 
+// Validate URL format for avatar
+const isValidImageUrl = (url) => {
+  if (!url) return true; // Empty is valid
+  try {
+    const parsedUrl = new URL(url);
+    // Only allow http and https protocols
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return false;
+    }
+    // Check for common image extensions (optional but recommended)
+    const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
+    return imageExtensions.test(parsedUrl.pathname) || parsedUrl.pathname.includes('/');
+  } catch {
+    return false;
+  }
+};
+
 const Settings = () => {
   const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
@@ -27,6 +44,13 @@ const Settings = () => {
     setLoading(true);
     setError('');
     setSuccess('');
+
+    // Validate avatar URL
+    if (formData.avatar && !isValidImageUrl(formData.avatar)) {
+      setError('Please enter a valid image URL (http/https protocol)');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await api.put('/users/profile', formData);

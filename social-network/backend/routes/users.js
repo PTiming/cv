@@ -7,22 +7,23 @@ const {
   searchUsers
 } = require('../controllers/userController');
 const auth = require('../middleware/auth');
+const { generalLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
 // @route   GET /api/users/search
-router.get('/search', auth, searchUsers);
+router.get('/search', generalLimiter, auth, searchUsers);
 
 // @route   GET /api/users/:id
-router.get('/:id', auth, getUserProfile);
+router.get('/:id', generalLimiter, auth, getUserProfile);
 
 // @route   PUT /api/users/profile
-router.put('/profile', auth, updateProfile);
+router.put('/profile', generalLimiter, auth, updateProfile);
 
 // @route   PUT /api/users/:id/follow
-router.put('/:id/follow', auth, followUser);
+router.put('/:id/follow', generalLimiter, auth, followUser);
 
 // @route   GET /api/users/:id/posts
-router.get('/:id/posts', auth, getUserPosts);
+router.get('/:id/posts', generalLimiter, auth, getUserPosts);
 
 module.exports = router;

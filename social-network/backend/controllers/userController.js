@@ -25,12 +25,27 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+// Helper function to validate URL
+const isValidUrl = (string) => {
+  try {
+    const url = new URL(string);
+    return ['http:', 'https:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
+};
+
 // @desc    Update user profile
 // @route   PUT /api/users/profile
 // @access  Private
 const updateProfile = async (req, res) => {
   try {
     const { name, bio, avatar } = req.body;
+
+    // Validate avatar URL if provided
+    if (avatar && !isValidUrl(avatar)) {
+      return res.status(400).json({ message: 'Invalid avatar URL. Must be a valid http/https URL.' });
+    }
 
     const updateFields = {};
     if (name) updateFields.name = name;
