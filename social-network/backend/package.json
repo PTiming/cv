@@ -1,0 +1,30 @@
+{
+  "name": "social-network-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "social-network",
+    "mern",
+    "express",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "MIT",
+  "description": "Backend API for MERN Social Network",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "multer": "^2.0.2",
+    "socket.io": "^4.7.4"
+  }
+}
