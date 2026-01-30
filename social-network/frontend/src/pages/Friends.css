@@ -1,0 +1,250 @@
+.friends-container {
+  min-height: calc(100vh - 70px);
+  background: var(--bg-secondary);
+}
+
+.friends-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Sidebar */
+.friends-sidebar {
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  padding: 24px;
+  height: calc(100vh - 70px);
+  position: sticky;
+  top: 70px;
+}
+
+.friends-sidebar h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.friend-search {
+  margin-bottom: 20px;
+}
+
+.friend-search input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.friend-search input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.friends-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.friends-nav button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.friends-nav button:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.friends-nav button.active {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent-primary);
+}
+
+.friends-nav .icon {
+  font-size: 20px;
+}
+
+.friends-nav .count {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.friends-nav .badge {
+  margin-left: auto;
+  background: var(--error);
+  color: white;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+/* Main Content */
+.friends-main {
+  padding: 24px;
+}
+
+.section h3,
+.search-results-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+/* Users Grid */
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.user-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.user-card .user-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+}
+
+.user-card .user-info img {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.user-card .user-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.user-card .user-info p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.user-card .user-info .mutual {
+  color: var(--accent-primary);
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.card-actions .btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 13px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state .icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.empty-state h4 {
+  font-size: 18px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: var(--text-muted);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+}
+
+/* Request Card highlight */
+.request-card {
+  border: 2px solid var(--accent-primary);
+  background: rgba(99, 102, 241, 0.02);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .friends-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .friends-sidebar {
+    position: relative;
+    top: 0;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px;
+  }
+
+  .friends-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .friends-nav button {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .friends-nav .count,
+  .friends-nav .badge {
+    display: none;
+  }
+
+  .friends-main {
+    padding: 16px;
+  }
+
+  .users-grid {
+    grid-template-columns: 1fr;
+  }
+}
