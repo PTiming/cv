@@ -27,6 +27,11 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(axios|socket.io-client|engine.io-client)/)"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
