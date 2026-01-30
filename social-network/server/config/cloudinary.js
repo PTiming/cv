@@ -15,7 +15,7 @@ cloudinary.config({
  */
 const uploadFile = async (filePath, options = {}) => {
   const defaultOptions = {
-    folder: 'social-network',
+    folder: 'educonnect',
     resource_type: 'auto',
     ...options
   };
@@ -31,7 +31,7 @@ const uploadFile = async (filePath, options = {}) => {
  */
 const uploadImage = async (filePath, options = {}) => {
   const defaultOptions = {
-    folder: 'social-network/images',
+    folder: 'educonnect/images',
     resource_type: 'image',
     transformation: [
       { width: 1200, height: 1200, crop: 'limit' },
@@ -52,7 +52,7 @@ const uploadImage = async (filePath, options = {}) => {
  */
 const uploadProfilePicture = async (filePath, userId) => {
   return cloudinary.uploader.upload(filePath, {
-    folder: `social-network/profiles/${userId}`,
+    folder: `educonnect/profiles/${userId}`,
     resource_type: 'image',
     transformation: [
       { width: 400, height: 400, crop: 'fill', gravity: 'face' },
@@ -70,7 +70,7 @@ const uploadProfilePicture = async (filePath, userId) => {
  */
 const uploadVideo = async (filePath, options = {}) => {
   const defaultOptions = {
-    folder: 'social-network/videos',
+    folder: 'educonnect/videos',
     resource_type: 'video',
     eager: [
       { streaming_profile: 'hd', format: 'm3u8' },
@@ -91,7 +91,7 @@ const uploadVideo = async (filePath, options = {}) => {
  */
 const uploadDocument = async (filePath, options = {}) => {
   const defaultOptions = {
-    folder: 'social-network/documents',
+    folder: 'educonnect/documents',
     resource_type: 'raw',
     ...options
   };

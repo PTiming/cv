@@ -7,13 +7,13 @@ const path = require('path');
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    let folder = 'social-network/uploads';
+    let folder = 'educonnect/uploads';
     let resourceType = 'auto';
     let transformation = [];
 
     // Determine folder and settings based on file type
     if (file.mimetype.startsWith('image/')) {
-      folder = 'social-network/images';
+      folder = 'educonnect/images';
       resourceType = 'image';
       transformation = [
         { width: 1200, height: 1200, crop: 'limit' },
@@ -21,10 +21,10 @@ const cloudinaryStorage = new CloudinaryStorage({
         { fetch_format: 'auto' }
       ];
     } else if (file.mimetype.startsWith('video/')) {
-      folder = 'social-network/videos';
+      folder = 'educonnect/videos';
       resourceType = 'video';
     } else {
-      folder = 'social-network/documents';
+      folder = 'educonnect/documents';
       resourceType = 'raw';
     }
 
@@ -109,7 +109,7 @@ const uploadFields = (fields) => upload.fields(fields);
 const profilePictureStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => ({
-    folder: `social-network/profiles/${req.user?.id || 'anonymous'}`,
+    folder: `educonnect/profiles/${req.user?.id || 'anonymous'}`,
     resource_type: 'image',
     transformation: [
       { width: 400, height: 400, crop: 'fill', gravity: 'face' },

@@ -137,7 +137,7 @@ const Feed = ({ explore = false }) => {
           </nav>
 
           <footer className="sidebar-footer">
-            <p>SocialLMS © 2024</p>
+            <p>EduConnect © 2024</p>
             <div className="footer-links">
               <a href="#">About</a>
               <a href="#">Help</a>
@@ -164,7 +164,7 @@ const Feed = ({ explore = false }) => {
             {posts.length === 0 ? (
               <div className="empty-feed card">
                 <div className="empty-illustration">🌟</div>
-                <h3>Welcome to SocialLMS!</h3>
+                <h3>Welcome to EduConnect!</h3>
                 <p>
                   {explore 
                     ? "No public posts yet. Be the first to share something!"

@@ -56,8 +56,8 @@ const Register = () => {
     <div className="auth-page">
       <div className="auth-left">
         <div className="auth-branding">
-          <div className="auth-logo">S</div>
-          <h1>SocialLMS</h1>
+          <div className="auth-logo">E</div>
+          <h1>EduConnect</h1>
           <p>Connect with classmates, share knowledge, and manage your learning journey all in one place.</p>
         </div>
         
@@ -85,7 +85,7 @@ const Register = () => {
         <div className="auth-card">
           <div className="auth-header">
             <h2>Create your account</h2>
-            <p>Join SocialLMS today</p>
+            <p>Join EduConnect today</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">

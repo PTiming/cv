@@ -1,4 +1,4 @@
-# SocialLMS - MERN Social Network with Moodle LMS Integration
+# EduConnect - MERN Social Network with Moodle LMS Integration
 
 A full-featured social network application built with the MERN stack (MongoDB, Express.js, React, Node.js) that integrates with Moodle Learning Management System.
 

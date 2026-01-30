@@ -74,7 +74,7 @@ const Navbar = () => {
         <div className="navbar-left">
           <Link to="/" className="navbar-logo">
             <div className="logo-icon">S</div>
-            <span className="logo-text">SocialLMS</span>
+            <span className="logo-text">EduConnect</span>
           </Link>
         </div>
 
@@ -84,7 +84,7 @@ const Navbar = () => {
             <FaSearch className="search-icon" />
             <input 
               type="text" 
-              placeholder="Search SocialLMS" 
+              placeholder="Search EduConnect" 
               className="search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
