@@ -37,7 +37,7 @@ const initializeSocket = (io) => {
     
     // Broadcast user online status
     io.emit('user:online', {
-      odId: socket.userId,
+      userId: socket.userId,
       username: socket.user.username
     });
 
@@ -59,7 +59,7 @@ const initializeSocket = (io) => {
     // Handle typing indicator
     socket.on('typing:start', ({ conversationId, recipientId }) => {
       socket.to(`conversation:${conversationId}`).emit('typing:start', {
-        odId: socket.userId,
+        userId: socket.userId,
         username: socket.user.username,
         conversationId
       });
@@ -67,7 +67,7 @@ const initializeSocket = (io) => {
 
     socket.on('typing:stop', ({ conversationId, recipientId }) => {
       socket.to(`conversation:${conversationId}`).emit('typing:stop', {
-        odId: socket.userId,
+        userId: socket.userId,
         conversationId
       });
     });
@@ -79,7 +79,7 @@ const initializeSocket = (io) => {
       
       // Broadcast user offline status
       io.emit('user:offline', {
-        odId: socket.userId,
+        userId: socket.userId,
         username: socket.user.username
       });
     });

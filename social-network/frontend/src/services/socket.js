@@ -5,7 +5,6 @@ const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
 class SocketService {
   constructor() {
     this.socket = null;
-    this.listeners = new Map();
   }
 
   connect(token) {

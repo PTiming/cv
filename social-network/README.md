@@ -235,6 +235,23 @@ npm start
 - `user:online` - User came online
 - `user:offline` - User went offline
 
+## Security Considerations
+
+This implementation includes basic security features:
+- JWT authentication with token expiration
+- Password hashing with bcrypt
+- Input validation with express-validator
+- Protected routes
+
+For production deployment, consider adding:
+- **Rate limiting** (e.g., express-rate-limit) to prevent abuse
+- **HTTPS** for encrypted communication
+- **CORS** configuration for specific origins
+- **Helmet.js** for HTTP security headers
+- **Database connection pooling** for better performance
+- **Input sanitization** to prevent XSS attacks
+- **CSRF protection** for form submissions
+
 ## License
 
 MIT License - feel free to use this project for learning or as a foundation for your own social network application.
