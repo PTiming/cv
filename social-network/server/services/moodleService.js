@@ -41,6 +41,7 @@ class MoodleService {
 
   /**
    * Authenticate user with Moodle and get token
+   * Note: Moodle's token.php endpoint requires credentials via POST form data
    * @param {string} username - Moodle username
    * @param {string} password - Moodle password
    */
@@ -48,11 +49,15 @@ class MoodleService {
     try {
       const url = `${this.baseUrl}/login/token.php`;
       
-      const response = await axios.get(url, {
-        params: {
-          username,
-          password,
-          service: this.service
+      // Use POST with form data for credentials - more secure than GET params
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+      formData.append('service', this.service);
+      
+      const response = await axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
 
@@ -62,7 +67,8 @@ class MoodleService {
 
       return response.data;
     } catch (error) {
-      console.error('Moodle authentication error:', error.message);
+      // Sanitize error message to avoid exposing credentials
+      console.error('Moodle authentication error:', error.message?.replace(/password=\S+/gi, 'password=[REDACTED]'));
       throw error;
     }
   }
