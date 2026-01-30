@@ -16,7 +16,7 @@ const generateToken = (userId) => {
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { username, email, password, firstName, lastName } = req.body;
+    const { username, email, password, firstName, lastName, role } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({
@@ -32,13 +32,19 @@ exports.register = async (req, res) => {
       });
     }
 
+    // Validate role - only allow certain roles during self-registration
+    // Admin and moderator roles must be assigned by an admin
+    const allowedRoles = ['user', 'student', 'instructor'];
+    const userRole = role && allowedRoles.includes(role) ? role : 'user';
+
     // Create user
     const user = await User.create({
       username,
       email,
       password,
       firstName,
-      lastName
+      lastName,
+      role: userRole
     });
 
     // Generate token

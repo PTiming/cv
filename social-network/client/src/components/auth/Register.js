@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaGraduationCap, FaUsers, FaBook, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaGraduationCap, FaUsers, FaBook, FaCheckCircle, FaExclamationCircle, FaUserTag } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import './Auth.css';
 
@@ -11,7 +11,8 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    role: 'student'
   });
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
@@ -43,7 +44,8 @@ const Register = () => {
       email: formData.email,
       password: formData.password,
       firstName: formData.firstName,
-      lastName: formData.lastName
+      lastName: formData.lastName,
+      role: formData.role
     });
     setLoading(false);
     
@@ -184,6 +186,30 @@ const Register = () => {
                   required
                 />
               </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="role">I am a... *</label>
+              <div className="input-wrapper">
+                <FaUserTag />
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  required
+                  className="role-select"
+                >
+                  <option value="student">Student</option>
+                  <option value="instructor">Instructor / Teacher</option>
+                  <option value="user">General User</option>
+                </select>
+              </div>
+              <span className="role-hint">
+                {formData.role === 'student' && '📚 Access courses, submit assignments, track grades'}
+                {formData.role === 'instructor' && '👨‍🏫 Create courses, manage students, grade assignments'}
+                {formData.role === 'user' && '👤 Basic social features without LMS integration'}
+              </span>
             </div>
 
             <button type="submit" className="auth-btn" disabled={loading}>
