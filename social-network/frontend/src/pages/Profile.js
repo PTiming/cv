@@ -3,19 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import Post from '../components/Post';
 import { useAuth } from '../context/AuthContext';
-import { useChat } from '../context/ChatContext';
 import './Profile.css';
 
 const Profile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   const { user: currentUser, updateUser } = useAuth();
-  const { getOrCreateConversation } = useChat();
   
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [friendStatus, setFriendStatus] = useState('none'); // none, friends, request_sent, request_received
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ username: '', bio: '' });
   const [error, setError] = useState('');
@@ -33,12 +31,10 @@ const Profile = () => {
       setProfile(response.data.user);
       setPosts(response.data.posts);
       
-      // Check if current user follows this profile
-      if (currentUser) {
-        const isFollowingUser = response.data.user.followers?.some(
-          follower => follower._id === currentUser.id
-        );
-        setIsFollowing(isFollowingUser);
+      // Check friendship status
+      if (currentUser && response.data.user._id !== currentUser.id) {
+        const statusRes = await api.get(`/friends/status/${response.data.user._id}`);
+        setFriendStatus(statusRes.data.status);
       }
       
       setEditForm({
@@ -53,31 +49,42 @@ const Profile = () => {
     }
   };
 
-  const handleFollow = async () => {
+  const handleFriendAction = async () => {
     try {
-      if (isFollowing) {
-        await api.post(`/users/${profile.id}/unfollow`);
-        setIsFollowing(false);
-        setProfile(prev => ({
-          ...prev,
-          followersCount: prev.followersCount - 1
-        }));
-      } else {
-        await api.post(`/users/${profile.id}/follow`);
-        setIsFollowing(true);
-        setProfile(prev => ({
-          ...prev,
-          followersCount: prev.followersCount + 1
-        }));
+      switch (friendStatus) {
+        case 'none':
+          await api.post(`/friends/request/${profile._id}`);
+          setFriendStatus('request_sent');
+          break;
+        case 'request_sent':
+          await api.post(`/friends/cancel/${profile._id}`);
+          setFriendStatus('none');
+          break;
+        case 'request_received':
+          await api.post(`/friends/accept/${profile._id}`);
+          setFriendStatus('friends');
+          break;
+        case 'friends':
+          if (window.confirm('Are you sure you want to remove this friend?')) {
+            await api.delete(`/friends/${profile._id}`);
+            setFriendStatus('none');
+          }
+          break;
+        default:
+          break;
       }
     } catch (error) {
-      console.error('Follow error:', error);
+      alert(error.response?.data?.message || 'Action failed');
     }
   };
 
   const handleMessage = async () => {
+    if (friendStatus !== 'friends') {
+      alert('You can only chat with friends. Send a friend request first!');
+      return;
+    }
     try {
-      const conversation = await getOrCreateConversation(profile.id);
+      await api.post('/chat/conversations', { participantId: profile._id });
       navigate('/chat');
     } catch (error) {
       console.error('Failed to start conversation:', error);
@@ -177,13 +184,21 @@ const Profile = () => {
               {!isOwnProfile && currentUser && (
                 <div className="profile-actions">
                   <button
-                    onClick={handleFollow}
-                    className={`follow-btn ${isFollowing ? 'following' : ''}`}
+                    onClick={handleFriendAction}
+                    className={`friend-btn ${friendStatus}`}
                   >
-                    {isFollowing ? 'Following' : 'Follow'}
+                    {friendStatus === 'none' && '+ Add Friend'}
+                    {friendStatus === 'request_sent' && '✓ Request Sent'}
+                    {friendStatus === 'request_received' && 'Accept Request'}
+                    {friendStatus === 'friends' && '✓ Friends'}
                   </button>
-                  <button onClick={handleMessage} className="message-btn">
-                    Message
+                  <button 
+                    onClick={handleMessage} 
+                    className="message-btn"
+                    disabled={friendStatus !== 'friends'}
+                    title={friendStatus !== 'friends' ? 'Become friends first to chat' : 'Send a message'}
+                  >
+                    💬 Message
                   </button>
                 </div>
               )}
@@ -203,12 +218,8 @@ const Profile = () => {
                 <span className="stat-label">posts</span>
               </div>
               <div className="stat">
-                <span className="stat-count">{profile?.followersCount || 0}</span>
-                <span className="stat-label">followers</span>
-              </div>
-              <div className="stat">
-                <span className="stat-count">{profile?.followingCount || 0}</span>
-                <span className="stat-label">following</span>
+                <span className="stat-count">{profile?.friendsCount || 0}</span>
+                <span className="stat-label">friends</span>
               </div>
             </div>
 

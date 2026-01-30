@@ -47,6 +47,7 @@ app.use('/api/posts', require('./routes/posts'));
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/chat', require('./routes/chat'));
+app.use('/api/friends', require('./routes/friends'));
 
 // Health check route
 app.get('/api/health', (req, res) => {

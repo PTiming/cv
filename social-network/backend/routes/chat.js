@@ -11,10 +11,13 @@ const { auth } = require('../middleware/auth');
 const getIO = (req) => req.app.get('io');
 
 // @route   GET /api/chat/conversations
-// @desc    Get user's conversations
+// @desc    Get user's conversations (only with friends)
 // @access  Private
 router.get('/conversations', auth, async (req, res) => {
   try {
+    const currentUser = await User.findById(req.userId);
+    const friendIds = currentUser.friends || [];
+
     const conversations = await Conversation.find({
       participants: req.userId
     })
@@ -25,17 +28,26 @@ router.get('/conversations', auth, async (req, res) => {
         populate: { path: 'sender', select: 'username' }
       });
 
-    // Add unread count for each conversation
+    // Filter to only show conversations with friends and add unread count
     const conversationsWithUnread = await Promise.all(
       conversations.map(async (conv) => {
+        const otherParticipant = conv.participants.find(
+          p => p._id.toString() !== req.userId.toString()
+        );
+        
+        // Check if other participant is a friend
+        const isFriend = friendIds.some(id => id.toString() === otherParticipant._id.toString());
+        
         const unreadCount = await Message.countDocuments({
           conversation: conv._id,
           sender: { $ne: req.userId },
           read: false
         });
+        
         return {
           ...conv.toObject(),
-          unreadCount
+          unreadCount,
+          isFriend
         };
       })
     );
@@ -48,7 +60,7 @@ router.get('/conversations', auth, async (req, res) => {
 });
 
 // @route   POST /api/chat/conversations
-// @desc    Create or get existing conversation
+// @desc    Create or get existing conversation (only with friends)
 // @access  Private
 router.post('/conversations', auth, [
   body('participantId').notEmpty().withMessage('Participant ID is required')
@@ -69,6 +81,16 @@ router.post('/conversations', auth, [
     const participant = await User.findById(participantId);
     if (!participant) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if they are friends
+    const currentUser = await User.findById(req.userId);
+    const areFriends = currentUser.friends && currentUser.friends.some(
+      id => id.toString() === participantId
+    );
+
+    if (!areFriends) {
+      return res.status(403).json({ message: 'You can only chat with friends. Send a friend request first!' });
     }
 
     // Check if conversation already exists

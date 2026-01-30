@@ -293,4 +293,55 @@ router.post('/:id/unlike', auth, async (req, res) => {
   }
 });
 
+// @route   POST /api/posts/:id/share
+// @desc    Share/Repost a post
+// @access  Private
+router.post('/:id/share', auth, async (req, res) => {
+  try {
+    const originalPost = await Post.findById(req.params.id);
+
+    if (!originalPost) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // Check if user already shared this post
+    if (originalPost.shares && originalPost.shares.includes(req.userId)) {
+      return res.status(400).json({ message: 'You have already shared this post' });
+    }
+
+    // Create repost
+    const repost = new Post({
+      user: req.userId,
+      content: req.body.content || '',
+      originalPost: originalPost._id,
+      isRepost: true
+    });
+
+    await repost.save();
+
+    // Add user to original post's shares
+    if (!originalPost.shares) {
+      originalPost.shares = [];
+    }
+    originalPost.shares.push(req.userId);
+    await originalPost.save();
+
+    const populatedRepost = await Post.findById(repost._id)
+      .populate('user', 'username avatar')
+      .populate({
+        path: 'originalPost',
+        populate: { path: 'user', select: 'username avatar' }
+      });
+
+    res.status(201).json({
+      message: 'Post shared successfully',
+      post: populatedRepost,
+      shareCount: originalPost.shares.length
+    });
+  } catch (error) {
+    console.error('Share post error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

@@ -40,6 +40,19 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  // Friends system
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  friendRequestsSent: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  friendRequestsReceived: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdAt: {
     type: Date,
     default: Date.now
@@ -47,6 +60,14 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Virtual for friends count
+userSchema.virtual('friendsCount').get(function() {
+  return this.friends ? this.friends.length : 0;
+});
+
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {

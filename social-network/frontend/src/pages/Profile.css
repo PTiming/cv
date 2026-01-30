@@ -82,21 +82,41 @@
   gap: 8px;
 }
 
-.follow-btn,
+.friend-btn,
 .message-btn,
 .edit-profile-btn {
-  padding: 8px 20px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  border: none;
 }
 
-.follow-btn {
-  background: #4a90d9;
+.friend-btn {
+  background: var(--accent-gradient);
   color: white;
-  border: none;
+}
+
+.friend-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.friend-btn.request_sent {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.friend-btn.request_received {
+  background: var(--success);
+  color: white;
+}
+
+.friend-btn.friends {
+  background: var(--bg-tertiary);
+  color: var(--success);
 }
 
 .follow-btn:hover {

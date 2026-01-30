@@ -21,14 +21,14 @@ const Chat = () => {
 
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
+  const [friends, setFriends] = useState([]);
+  const [showFriendsList, setShowFriendsList] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
     fetchConversations();
+    fetchFriends();
   }, [fetchConversations]);
 
   useEffect(() => {
@@ -44,6 +44,15 @@ const Chat = () => {
       }
     };
   }, [selectedConversation, leaveConversation]);
+
+  const fetchFriends = async () => {
+    try {
+      const response = await api.get('/friends');
+      setFriends(response.data.friends);
+    } catch (error) {
+      console.error('Failed to fetch friends:', error);
+    }
+  };
 
   const handleSelectConversation = (conversation) => {
     if (selectedConversation?._id === conversation._id) return;
@@ -94,40 +103,19 @@ const Chat = () => {
     stopTyping(selectedConversation._id, recipient._id);
   };
 
-  const handleSearch = async (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setSearching(true);
-    try {
-      const response = await api.get(`/users/search/${query}`);
-      setSearchResults(response.data.users.filter(u => u._id !== user.id));
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const startNewConversation = async (participant) => {
+  const startNewConversation = async (friend) => {
     try {
       const response = await api.post('/chat/conversations', {
-        participantId: participant._id
+        participantId: friend._id
       });
       const conversation = response.data.conversation;
       
       setSelectedConversation(conversation);
       joinConversation(conversation._id);
-      setSearchQuery('');
-      setSearchResults([]);
+      setShowFriendsList(false);
       fetchConversations();
     } catch (error) {
-      console.error('Failed to start conversation:', error);
+      alert(error.response?.data?.message || 'Failed to start conversation');
     }
   };
 
@@ -150,40 +138,53 @@ const Chat = () => {
     return date.toLocaleDateString();
   };
 
+  // Filter friends who don't have a conversation yet
+  const friendsWithoutConversation = friends.filter(friend => {
+    return !conversations.some(conv => {
+      const otherParticipant = getOtherParticipant(conv);
+      return otherParticipant?._id === friend._id;
+    });
+  });
+
   return (
     <div className="chat-container">
       {/* Conversations List */}
       <div className="conversations-panel">
         <div className="conversations-header">
           <h2>Messages</h2>
+          <button 
+            className="new-chat-btn"
+            onClick={() => setShowFriendsList(!showFriendsList)}
+            title="Start new conversation"
+          >
+            ✏️
+          </button>
         </div>
 
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search users to chat..."
-            value={searchQuery}
-            onChange={handleSearch}
-          />
-        </div>
-
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <div className="search-results">
-            {searchResults.map(result => (
-              <div
-                key={result._id}
-                className="search-result-item"
-                onClick={() => startNewConversation(result)}
-              >
-                <img
-                  src={result.avatar || '/default-avatar.png'}
-                  alt={result.username}
-                  className="user-avatar"
-                />
-                <span>{result.username}</span>
-              </div>
-            ))}
+        {/* Friends List for new conversation */}
+        {showFriendsList && (
+          <div className="friends-list-dropdown">
+            <h4>Start a conversation with a friend</h4>
+            {friends.length === 0 ? (
+              <p className="no-friends">You need friends to chat! <a href="/friends">Add friends</a></p>
+            ) : friendsWithoutConversation.length === 0 ? (
+              <p className="no-friends">You have conversations with all your friends!</p>
+            ) : (
+              friendsWithoutConversation.map(friend => (
+                <div
+                  key={friend._id}
+                  className="friend-item"
+                  onClick={() => startNewConversation(friend)}
+                >
+                  <img
+                    src={friend.avatar || '/default-avatar.png'}
+                    alt={friend.username}
+                    className="user-avatar"
+                  />
+                  <span>{friend.username}</span>
+                </div>
+              ))
+            )}
           </div>
         )}
 
@@ -193,7 +194,9 @@ const Chat = () => {
             <div className="loading">Loading conversations...</div>
           ) : conversations.length === 0 ? (
             <div className="no-conversations">
-              No conversations yet. Search for users to start chatting!
+              <p>No conversations yet.</p>
+              <p>Add friends to start chatting!</p>
+              <a href="/friends" className="add-friends-link">Find Friends</a>
             </div>
           ) : (
             conversations.map(conversation => {

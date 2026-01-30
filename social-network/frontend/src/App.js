@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import Notifications from './pages/Notifications';
+import Friends from './pages/Friends';
 
 import './App.css';
 
@@ -19,7 +20,7 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div className="loading-screen">Loading...</div>;
+    return <div className="loading-screen"><div className="loading-spinner"></div></div>;
   }
 
   if (!isAuthenticated) {
@@ -34,7 +35,7 @@ const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div className="loading-screen">Loading...</div>;
+    return <div className="loading-screen"><div className="loading-spinner"></div></div>;
   }
 
   if (isAuthenticated) {
@@ -97,6 +98,14 @@ const AppLayout = () => {
           element={
             <ProtectedRoute>
               <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/friends"
+          element={
+            <ProtectedRoute>
+              <Friends />
             </ProtectedRoute>
           }
         />

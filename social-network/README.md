@@ -1,6 +1,6 @@
 # MERN Social Network
 
-A full-featured social network application built with the MERN stack (MongoDB, Express.js, React.js, Node.js) featuring real-time notifications and chat functionality.
+A full-featured social network application built with the MERN stack (MongoDB, Express.js, React.js, Node.js) featuring real-time notifications, friend system, and chat functionality.
 
 ## Features
 
@@ -10,21 +10,28 @@ A full-featured social network application built with the MERN stack (MongoDB, E
 - Password hashing with bcrypt
 - Protected routes
 
+### Friend System 👥
+- **Send Friend Requests**: Send friend requests to other users
+- **Accept/Reject Requests**: Manage incoming friend requests
+- **Friends List**: View and manage your friends
+- **Friend Suggestions**: Get suggestions based on mutual friends
+- **Friendship Status**: See if you're friends, pending, etc. on profiles
+
 ### Social Features
 - **Posts**: Create, edit, delete posts with optional images
 - **Comments**: Comment on posts
 - **Likes**: Like/unlike posts and comments
-- **Follow System**: Follow/unfollow users
 - **User Profiles**: Customizable profiles with bio and avatar
 
 ### Real-time Features (Socket.io)
 - **Real-time Notifications**: Instant notifications for:
+  - Friend requests
+  - Friend request accepted
   - Likes on your posts
   - Comments on your posts
-  - New followers
   - New messages
-- **Real-time Chat**:
-  - Direct messaging between users
+- **Real-time Chat** (Friends Only):
+  - Direct messaging with friends
   - Typing indicators
   - Online/offline status
   - Message read receipts
@@ -32,7 +39,7 @@ A full-featured social network application built with the MERN stack (MongoDB, E
 
 ### Additional Features
 - User search functionality
-- Feed filtering (All posts / Following only)
+- Modern gradient-based UI design
 - Responsive design
 - Image uploads for posts and avatars
 
