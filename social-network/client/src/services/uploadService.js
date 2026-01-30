@@ -139,12 +139,12 @@ export const uploadProfilePicture = async (file, onProgress = null) => {
 
 /**
  * Delete an uploaded file
- * @param {string} publicId - The public ID of the file to delete
- * @param {string} resourceType - Type of resource (image, video, raw)
+ * @param {string} filename - The filename to delete
+ * @param {string} folder - Folder where the file is located
  * @returns {Promise<object>} - Deletion result
  */
-export const deleteFile = async (publicId, resourceType = 'image') => {
-  const response = await api.delete(`/upload/${encodeURIComponent(publicId)}?resourceType=${resourceType}`);
+export const deleteFile = async (filename, folder = 'images') => {
+  const response = await api.delete(`/upload/${encodeURIComponent(filename)}?folder=${folder}`);
   return response.data;
 };
 

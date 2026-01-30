@@ -1,8 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const auth = require('../middleware/auth');
 const { uploadSingle, uploadMultiple, uploadProfilePicture, handleUploadError } = require('../middleware/upload');
-const { deleteFile } = require('../config/cloudinary');
+
+// Helper to get file URL
+const getFileUrl = (req, file) => {
+  const relativePath = file.path.replace(/\\/g, '/');
+  return `${req.protocol}://${req.get('host')}/${relativePath}`;
+};
 
 // @route   POST /api/upload/image
 // @desc    Upload a single image
@@ -13,11 +20,12 @@ router.post('/image', auth, uploadSingle('image'), handleUploadError, (req, res)
   }
 
   const fileInfo = {
-    url: req.file.path || req.file.secure_url || req.file.url,
-    publicId: req.file.filename || req.file.public_id,
+    url: getFileUrl(req, req.file),
+    filename: req.file.filename,
     originalName: req.file.originalname,
     size: req.file.size,
-    mimetype: req.file.mimetype
+    mimetype: req.file.mimetype,
+    path: req.file.path
   };
 
   res.json({
@@ -35,11 +43,12 @@ router.post('/images', auth, uploadMultiple('images', 10), handleUploadError, (r
   }
 
   const files = req.files.map(file => ({
-    url: file.path || file.secure_url || file.url,
-    publicId: file.filename || file.public_id,
+    url: getFileUrl(req, file),
+    filename: file.filename,
     originalName: file.originalname,
     size: file.size,
-    mimetype: file.mimetype
+    mimetype: file.mimetype,
+    path: file.path
   }));
 
   res.json({
@@ -57,11 +66,12 @@ router.post('/document', auth, uploadSingle('document'), handleUploadError, (req
   }
 
   const fileInfo = {
-    url: req.file.path || req.file.secure_url || req.file.url,
-    publicId: req.file.filename || req.file.public_id,
+    url: getFileUrl(req, req.file),
+    filename: req.file.filename,
     originalName: req.file.originalname,
     size: req.file.size,
-    mimetype: req.file.mimetype
+    mimetype: req.file.mimetype,
+    path: req.file.path
   };
 
   res.json({
@@ -79,11 +89,12 @@ router.post('/video', auth, uploadSingle('video'), handleUploadError, (req, res)
   }
 
   const fileInfo = {
-    url: req.file.path || req.file.secure_url || req.file.url,
-    publicId: req.file.filename || req.file.public_id,
+    url: getFileUrl(req, req.file),
+    filename: req.file.filename,
     originalName: req.file.originalname,
     size: req.file.size,
-    mimetype: req.file.mimetype
+    mimetype: req.file.mimetype,
+    path: req.file.path
   };
 
   res.json({
@@ -106,8 +117,9 @@ router.post('/profile-picture', auth, (req, res) => {
     }
 
     const fileInfo = {
-      url: req.file.path || req.file.secure_url || req.file.url,
-      publicId: req.file.filename || req.file.public_id
+      url: getFileUrl(req, req.file),
+      filename: req.file.filename,
+      path: req.file.path
     };
 
     res.json({
@@ -117,27 +129,35 @@ router.post('/profile-picture', auth, (req, res) => {
   });
 });
 
-// @route   DELETE /api/upload/:publicId
+// @route   DELETE /api/upload/:filename
 // @desc    Delete an uploaded file
 // @access  Private
-router.delete('/:publicId', auth, async (req, res) => {
+router.delete('/:filename', auth, async (req, res) => {
   try {
-    const { publicId } = req.params;
-    const { resourceType = 'image' } = req.query;
-
-    // Validate resource type
-    const validTypes = ['image', 'video', 'raw'];
-    if (!validTypes.includes(resourceType)) {
-      return res.status(400).json({ error: 'Invalid resource type' });
+    const { filename } = req.params;
+    const { folder = 'uploads' } = req.query;
+    
+    // Construct the file path - only allow deleting from uploads directory
+    const uploadBase = process.env.UPLOAD_PATH || './uploads';
+    const filePath = path.join(uploadBase, folder, req.user.id.toString(), filename);
+    
+    // Security check - ensure the path is within uploads directory
+    const resolvedPath = path.resolve(filePath);
+    const resolvedBase = path.resolve(uploadBase);
+    
+    if (!resolvedPath.startsWith(resolvedBase)) {
+      return res.status(403).json({ error: 'Access denied' });
     }
-
-    const result = await deleteFile(publicId, resourceType);
-
-    if (result.result === 'ok' || result.result === 'not found') {
-      res.json({ message: 'File deleted successfully' });
-    } else {
-      res.status(400).json({ error: 'Failed to delete file' });
+    
+    // Check if file exists
+    if (!fs.existsSync(resolvedPath)) {
+      return res.status(404).json({ error: 'File not found' });
     }
+    
+    // Delete the file
+    fs.unlinkSync(resolvedPath);
+    
+    res.json({ message: 'File deleted successfully' });
   } catch (error) {
     console.error('Delete file error:', error);
     res.status(500).json({ error: 'Server error while deleting file' });
