@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimit');
 
 // Load environment variables
 dotenv.config();
@@ -21,6 +22,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Apply rate limiting to all API routes
+app.use('/api', apiLimiter);
+
+// Apply stricter rate limiting to auth routes
+app.use('/api/auth', authLimiter);
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

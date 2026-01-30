@@ -1,11 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+/**
+ * Safely strip HTML tags from text using DOM API
+ */
+const stripHtmlTags = (html) => {
+  if (!html) return '';
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
+};
+
 const CourseCard = ({ course }) => {
   const truncateSummary = (text, maxLength = 100) => {
     if (!text) return 'No description available';
-    // Remove HTML tags
-    const plainText = text.replace(/<[^>]*>/g, '');
+    // Safely remove HTML tags using DOM API
+    const plainText = stripHtmlTags(text);
     if (plainText.length <= maxLength) return plainText;
     return plainText.substring(0, maxLength) + '...';
   };
