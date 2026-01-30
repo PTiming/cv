@@ -4,11 +4,8 @@
 # import the necessary packages
 from pptx import Presentation
 from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
-from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import PP_ALIGN
 import argparse
-import os
 
 def add_title_slide(prs, title, subtitle):
     """Add a title slide to the presentation."""
@@ -308,8 +305,16 @@ confidence = preds[np.argmax(preds)]"""
     )
     
     # Save the presentation
-    prs.save(output_path)
-    print(f"[INFO] Presentation saved to: {output_path}")
+    try:
+        prs.save(output_path)
+        print(f"[INFO] Presentation saved to: {output_path}")
+    except PermissionError:
+        print(f"[ERROR] Permission denied when saving to: {output_path}")
+        return None
+    except OSError as e:
+        print(f"[ERROR] Failed to save presentation: {e}")
+        return None
+    
     return output_path
 
 
