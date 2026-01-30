@@ -13,7 +13,8 @@ const Courses = () => {
     if (user?.moodleUserId) {
       fetchCourses();
     }
-  }, [user, fetchCourses]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.moodleUserId]);
 
   if (!user?.moodleUserId) {
     return (
@@ -22,7 +23,7 @@ const Courses = () => {
         <div className="settings-section">
           <h2>Connect to Moodle</h2>
           <p>You need to connect your Moodle account to view your courses.</p>
-          <Link to="/settings" className="btn btn-primary" style={{ marginTop: '15px', display: 'inline-block' }}>
+          <Link to="/settings" className="btn btn-primary btn-margin-top">
             Go to Settings
           </Link>
         </div>

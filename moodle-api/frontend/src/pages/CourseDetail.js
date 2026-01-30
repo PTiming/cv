@@ -11,7 +11,8 @@ const CourseDetail = () => {
 
   useEffect(() => {
     fetchContents();
-  }, [courseId, fetchContents]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId]);
 
   const handleActivityComplete = async (activityId) => {
     try {
@@ -40,7 +41,7 @@ const CourseDetail = () => {
 
   return (
     <div className="course-detail">
-      <Link to="/courses" className="btn btn-secondary" style={{ marginBottom: '20px' }}>
+      <Link to="/courses" className="btn btn-secondary back-link">
         ← Back to Courses
       </Link>
 
@@ -74,7 +75,7 @@ const CourseDetail = () => {
                   ))}
                 </ul>
               ) : (
-                <div style={{ padding: '15px 20px', color: '#666' }}>
+                <div className="section-empty">
                   No activities in this section
                 </div>
               )}

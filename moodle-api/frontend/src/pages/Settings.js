@@ -56,13 +56,7 @@ const Settings = () => {
         </div>
 
         {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message" style={{ 
-          background: '#e8f5e9', 
-          color: '#2e7d32', 
-          padding: '10px', 
-          borderRadius: '5px', 
-          marginBottom: '20px' 
-        }}>{success}</div>}
+        {success && <div className="success-message">{success}</div>}
 
         <form onSubmit={handleConnectMoodle}>
           <div className="form-group">
@@ -75,7 +69,7 @@ const Settings = () => {
               placeholder="Enter your Moodle token"
               required
             />
-            <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
+            <small className="form-hint">
               You can get your token from your Moodle site under Site administration → Plugins → Web services → Manage tokens
             </small>
           </div>

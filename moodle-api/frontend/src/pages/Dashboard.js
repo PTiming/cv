@@ -17,7 +17,8 @@ const Dashboard = () => {
     if (user?.moodleUserId) {
       fetchCourses();
     }
-  }, [user, fetchCourses]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.moodleUserId]);
 
   useEffect(() => {
     if (courses.length > 0) {
@@ -37,7 +38,7 @@ const Dashboard = () => {
         <div className="settings-section">
           <h2>Connect to Moodle</h2>
           <p>You haven't connected your Moodle account yet. Connect it in the settings to access your courses.</p>
-          <Link to="/settings" className="btn btn-primary" style={{ marginTop: '15px', display: 'inline-block' }}>
+          <Link to="/settings" className="btn btn-primary btn-margin-top">
             Go to Settings
           </Link>
         </div>
@@ -86,7 +87,7 @@ const Dashboard = () => {
               </div>
             )}
             {courses.length > 3 && (
-              <Link to="/courses" className="btn btn-secondary" style={{ marginTop: '20px', display: 'inline-block' }}>
+              <Link to="/courses" className="btn btn-secondary btn-margin-top-lg">
                 View All Courses
               </Link>
             )}

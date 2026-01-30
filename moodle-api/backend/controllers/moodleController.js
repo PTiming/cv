@@ -67,14 +67,30 @@ exports.getMyCourses = async (req, res) => {
 };
 
 /**
+ * Helper function to validate positive integer
+ */
+const isValidPositiveInt = (value) => {
+  const num = parseInt(value, 10);
+  return !isNaN(num) && num > 0 && String(num) === String(value);
+};
+
+/**
  * @desc    Get course contents
  * @route   GET /api/moodle/courses/:courseId/contents
  * @access  Private
  */
 exports.getCourseContents = async (req, res) => {
   try {
+    const { courseId } = req.params;
+    if (!isValidPositiveInt(courseId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid course ID'
+      });
+    }
+
     const moodleService = await getMoodleService(req.user);
-    const contents = await moodleService.getCourseContents(req.params.courseId);
+    const contents = await moodleService.getCourseContents(courseId);
 
     res.status(200).json({
       success: true,
@@ -95,9 +111,17 @@ exports.getCourseContents = async (req, res) => {
  */
 exports.getCourseGrades = async (req, res) => {
   try {
+    const { courseId } = req.params;
+    if (!isValidPositiveInt(courseId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid course ID'
+      });
+    }
+
     const moodleService = await getMoodleService(req.user);
     const user = await User.findById(req.user.id);
-    const grades = await moodleService.getGrades(req.params.courseId, user.moodleUserId);
+    const grades = await moodleService.getGrades(courseId, user.moodleUserId);
 
     res.status(200).json({
       success: true,
@@ -246,9 +270,17 @@ exports.getCalendarEvents = async (req, res) => {
  */
 exports.getCourseCompletion = async (req, res) => {
   try {
+    const { courseId } = req.params;
+    if (!isValidPositiveInt(courseId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid course ID'
+      });
+    }
+
     const moodleService = await getMoodleService(req.user);
     const user = await User.findById(req.user.id);
-    const completion = await moodleService.getCourseCompletion(req.params.courseId, user.moodleUserId);
+    const completion = await moodleService.getCourseCompletion(courseId, user.moodleUserId);
 
     res.status(200).json({
       success: true,
@@ -269,11 +301,19 @@ exports.getCourseCompletion = async (req, res) => {
  */
 exports.markActivityComplete = async (req, res) => {
   try {
+    const { cmid } = req.params;
+    if (!isValidPositiveInt(cmid)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid activity ID'
+      });
+    }
+
     const moodleService = await getMoodleService(req.user);
     const { completed } = req.body;
     
     const result = await moodleService.markActivityComplete(
-      req.params.cmid,
+      cmid,
       completed !== false
     );
 

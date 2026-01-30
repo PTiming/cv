@@ -29,8 +29,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Only redirect if not already on auth pages
+      const isAuthPage = window.location.pathname === '/login' || 
+                         window.location.pathname === '/register';
+      if (!isAuthPage) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

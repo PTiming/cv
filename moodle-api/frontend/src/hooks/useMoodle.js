@@ -108,11 +108,14 @@ export const useCourseDetail = (courseId) => {
     }
   }, [courseId]);
 
+  // Intentionally not including fetchContents in dependencies to avoid re-fetching loops
+  // The caller can manually call fetchContents if needed
   useEffect(() => {
     if (courseId) {
       fetchContents();
     }
-  }, [courseId, fetchContents]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId]);
 
   return {
     contents,

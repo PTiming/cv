@@ -40,6 +40,8 @@ class MoodleService {
     } catch (error) {
       if (error.response) {
         throw new Error(`Moodle API Error: ${error.response.status} - ${error.response.statusText}`);
+      } else if (error.request) {
+        throw new Error('Moodle API Error: No response received from server');
       }
       throw error;
     }

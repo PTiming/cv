@@ -11,8 +11,14 @@ connectDB();
 
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -29,10 +35,15 @@ app.get('/api/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  // Log error for debugging (sanitized in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.error(err.stack);
+  } else {
+    console.error('Error:', err.message);
+  }
   res.status(500).json({
     success: false,
-    error: err.message || 'Server Error'
+    error: process.env.NODE_ENV === 'production' ? 'Server Error' : err.message
   });
 });
 

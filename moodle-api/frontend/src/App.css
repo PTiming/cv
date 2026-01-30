@@ -423,3 +423,39 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Additional utility classes */
+.success-message {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.btn-margin-top {
+  margin-top: 15px;
+  display: inline-block;
+}
+
+.btn-margin-top-lg {
+  margin-top: 20px;
+  display: inline-block;
+}
+
+.section-empty {
+  padding: 15px 20px;
+  color: #666;
+}
+
+.back-link {
+  margin-bottom: 20px;
+}
+
+.form-hint {
+  color: #666;
+  display: block;
+  margin-top: 5px;
+  font-size: 0.85rem;
+}
