@@ -324,3 +324,452 @@ exports.getCourseQuizzes = async (req, res) => {
     });
   }
 };
+
+// @desc    Get forum discussions
+// @route   GET /api/moodle/forums/:forumId/discussions
+// @access  Private
+exports.getForumDiscussions = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const { page = 0, perPage = 10 } = req.query;
+    const discussions = await moodleService.getForumDiscussions(
+      parseInt(req.params.forumId),
+      user.moodleToken,
+      parseInt(page),
+      parseInt(perPage)
+    );
+
+    res.json({
+      success: true,
+      data: discussions
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch forum discussions'
+    });
+  }
+};
+
+// @desc    Get discussion posts
+// @route   GET /api/moodle/discussions/:discussionId/posts
+// @access  Private
+exports.getDiscussionPosts = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const posts = await moodleService.getDiscussionPosts(
+      parseInt(req.params.discussionId),
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      data: posts
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch discussion posts'
+    });
+  }
+};
+
+// @desc    Get assignment submissions
+// @route   GET /api/moodle/assignments/:assignmentId/submissions
+// @access  Private
+exports.getAssignmentSubmissions = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const submissions = await moodleService.getAssignmentSubmissions(
+      parseInt(req.params.assignmentId),
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      data: submissions
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch assignment submissions'
+    });
+  }
+};
+
+// ============================================
+// WRITE Functions - Send data TO Moodle
+// ============================================
+
+// @desc    Send a message to a Moodle user
+// @route   POST /api/moodle/messages
+// @access  Private
+exports.sendMessage = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const { toUserId, message } = req.body;
+
+    if (!toUserId || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'toUserId and message are required'
+      });
+    }
+
+    const result = await moodleService.sendMessage(
+      parseInt(toUserId),
+      message,
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Message sent successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to send message'
+    });
+  }
+};
+
+// @desc    Submit an assignment
+// @route   POST /api/moodle/assignments/:assignmentId/submit
+// @access  Private
+exports.submitAssignment = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const { text, itemId } = req.body;
+    const assignmentId = parseInt(req.params.assignmentId);
+
+    const result = await moodleService.submitAssignment(
+      assignmentId,
+      text,
+      itemId,
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Assignment submitted successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to submit assignment'
+    });
+  }
+};
+
+// @desc    Submit assignment for grading (lock submission)
+// @route   POST /api/moodle/assignments/:assignmentId/submit-for-grading
+// @access  Private
+exports.submitForGrading = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const assignmentId = parseInt(req.params.assignmentId);
+
+    const result = await moodleService.submitAssignmentForGrading(
+      assignmentId,
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Assignment submitted for grading',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to submit for grading'
+    });
+  }
+};
+
+// @desc    Create a new forum discussion
+// @route   POST /api/moodle/forums/:forumId/discussions
+// @access  Private
+exports.createForumDiscussion = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const { subject, message, options } = req.body;
+    const forumId = parseInt(req.params.forumId);
+
+    if (!subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Subject and message are required'
+      });
+    }
+
+    const result = await moodleService.addForumDiscussion(
+      forumId,
+      subject,
+      message,
+      options || {},
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Discussion created successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to create discussion'
+    });
+  }
+};
+
+// @desc    Reply to a forum post
+// @route   POST /api/moodle/posts/:postId/reply
+// @access  Private
+exports.replyToPost = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const { subject, message } = req.body;
+    const postId = parseInt(req.params.postId);
+
+    if (!message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message is required'
+      });
+    }
+
+    const result = await moodleService.addForumPost(
+      postId,
+      subject || 'Re: ',
+      message,
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Reply posted successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to post reply'
+    });
+  }
+};
+
+// @desc    Create a calendar event
+// @route   POST /api/moodle/calendar/events
+// @access  Private
+exports.createCalendarEvent = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const { name, description, timestart, duration, options } = req.body;
+
+    if (!name || !timestart) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name and timestart are required'
+      });
+    }
+
+    const result = await moodleService.createCalendarEvent(
+      name,
+      description || '',
+      parseInt(timestart),
+      duration || 0,
+      options || {},
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Calendar event created successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to create calendar event'
+    });
+  }
+};
+
+// @desc    Delete a calendar event
+// @route   DELETE /api/moodle/calendar/events/:eventId
+// @access  Private
+exports.deleteCalendarEvent = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const eventId = parseInt(req.params.eventId);
+
+    const result = await moodleService.deleteCalendarEvent(
+      eventId,
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Calendar event deleted successfully',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to delete calendar event'
+    });
+  }
+};
+
+// @desc    Mark notification as read
+// @route   PUT /api/moodle/notifications/:notificationId/read
+// @access  Private
+exports.markNotificationRead = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const notificationId = parseInt(req.params.notificationId);
+
+    const result = await moodleService.markNotificationRead(
+      notificationId,
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Notification marked as read',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to mark notification as read'
+    });
+  }
+};
+
+// @desc    Mark all messages with a user as read
+// @route   PUT /api/moodle/messages/:userId/read
+// @access  Private
+exports.markMessagesRead = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+moodleToken');
+
+    if (!user.moodleLinked || !user.moodleToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Moodle account not linked'
+      });
+    }
+
+    const userId = parseInt(req.params.userId);
+
+    const result = await moodleService.markMessagesRead(
+      userId,
+      user.moodleToken
+    );
+
+    res.json({
+      success: true,
+      message: 'Messages marked as read',
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to mark messages as read'
+    });
+  }
+};

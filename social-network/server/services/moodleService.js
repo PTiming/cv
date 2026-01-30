@@ -295,6 +295,230 @@ class MoodleService {
       avatar: moodleUser.profileimageurl || ''
     };
   }
+
+  // ============================================
+  // WRITE FUNCTIONS - Send data TO Moodle
+  // ============================================
+
+  /**
+   * Send a message to a Moodle user
+   * @param {number} toUserId - Recipient's Moodle user ID
+   * @param {string} message - Message text (can include HTML)
+   * @param {string} token - User's Moodle token
+   */
+  async sendMessage(toUserId, message, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.sendMessage,
+      {
+        'messages[0][touserid]': toUserId,
+        'messages[0][text]': message,
+        'messages[0][textformat]': 1 // 1 = HTML format
+      },
+      token
+    );
+  }
+
+  /**
+   * Submit/save assignment submission
+   * @param {number} assignmentId - Assignment ID
+   * @param {string} text - Online text submission (if allowed)
+   * @param {number} itemId - File area itemid for file submissions
+   * @param {string} token - User's Moodle token
+   */
+  async submitAssignment(assignmentId, text, itemId, token) {
+    const params = {
+      assignmentid: assignmentId,
+      'plugindata[onlinetext_editor][text]': text || '',
+      'plugindata[onlinetext_editor][format]': 1,
+      'plugindata[onlinetext_editor][itemid]': itemId || 0
+    };
+    
+    return this.callMoodleAPI(
+      moodleConfig.functions.submitAssignment,
+      params,
+      token
+    );
+  }
+
+  /**
+   * Submit assignment for grading (lock submission)
+   * @param {number} assignmentId - Assignment ID
+   * @param {string} token - User's Moodle token
+   */
+  async submitAssignmentForGrading(assignmentId, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.submitAssignmentForGrading,
+      {
+        assignmentid: assignmentId,
+        acceptsubmissionstatement: 1
+      },
+      token
+    );
+  }
+
+  /**
+   * Add a new discussion (topic) to a forum
+   * @param {number} forumId - Forum ID
+   * @param {string} subject - Discussion subject
+   * @param {string} message - Discussion message (HTML supported)
+   * @param {object} options - Additional options (groupid, pinned, etc.)
+   * @param {string} token - User's Moodle token
+   */
+  async addForumDiscussion(forumId, subject, message, options = {}, token) {
+    const params = {
+      forumid: forumId,
+      subject: subject,
+      message: message,
+      messageformat: 1, // HTML format
+      ...options
+    };
+    
+    return this.callMoodleAPI(
+      moodleConfig.functions.addForumDiscussion,
+      params,
+      token
+    );
+  }
+
+  /**
+   * Add a reply to a forum discussion
+   * @param {number} postId - Parent post ID to reply to
+   * @param {string} subject - Reply subject
+   * @param {string} message - Reply message (HTML supported)
+   * @param {string} token - User's Moodle token
+   */
+  async addForumPost(postId, subject, message, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.addForumPost,
+      {
+        postid: postId,
+        subject: subject,
+        message: message,
+        messageformat: 1
+      },
+      token
+    );
+  }
+
+  /**
+   * Get forum discussions
+   * @param {number} forumId - Forum ID
+   * @param {string} token - User's Moodle token
+   * @param {number} page - Page number
+   * @param {number} perPage - Items per page
+   */
+  async getForumDiscussions(forumId, token, page = 0, perPage = 10) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.getForumDiscussions,
+      {
+        forumid: forumId,
+        page: page,
+        perpage: perPage,
+        sortorder: -1 // Newest first
+      },
+      token
+    );
+  }
+
+  /**
+   * Get posts in a discussion
+   * @param {number} discussionId - Discussion ID
+   * @param {string} token - User's Moodle token
+   */
+  async getDiscussionPosts(discussionId, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.getDiscussionPosts,
+      { discussionid: discussionId },
+      token
+    );
+  }
+
+  /**
+   * Create a calendar event
+   * @param {string} name - Event name
+   * @param {string} description - Event description
+   * @param {number} timestart - Unix timestamp for start time
+   * @param {number} duration - Duration in seconds
+   * @param {object} options - Additional options (courseid, groupid, etc.)
+   * @param {string} token - User's Moodle token
+   */
+  async createCalendarEvent(name, description, timestart, duration = 0, options = {}, token) {
+    const params = {
+      'events[0][name]': name,
+      'events[0][description]': description,
+      'events[0][format]': 1,
+      'events[0][timestart]': timestart,
+      'events[0][timeduration]': duration,
+      'events[0][eventtype]': options.eventtype || 'user',
+      ...Object.fromEntries(
+        Object.entries(options).map(([key, value]) => [`events[0][${key}]`, value])
+      )
+    };
+    
+    return this.callMoodleAPI(
+      moodleConfig.functions.createCalendarEvent,
+      params,
+      token
+    );
+  }
+
+  /**
+   * Delete a calendar event
+   * @param {number} eventId - Event ID
+   * @param {string} token - User's Moodle token
+   */
+  async deleteCalendarEvent(eventId, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.deleteCalendarEvent,
+      {
+        'events[0][eventid]': eventId,
+        'events[0][repeat]': 0
+      },
+      token
+    );
+  }
+
+  /**
+   * Mark notification as read
+   * @param {number} notificationId - Notification ID
+   * @param {string} token - User's Moodle token
+   */
+  async markNotificationRead(notificationId, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.markNotificationRead,
+      { notificationid: notificationId },
+      token
+    );
+  }
+
+  /**
+   * Mark all messages as read with a user
+   * @param {number} userId - User ID to mark messages read with
+   * @param {string} token - User's Moodle token
+   */
+  async markMessagesRead(userId, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.markMessagesRead,
+      { useridto: userId },
+      token
+    );
+  }
+
+  /**
+   * Get assignment submissions
+   * @param {number} assignmentId - Assignment ID
+   * @param {string} token - User's Moodle token
+   */
+  async getAssignmentSubmissions(assignmentId, token) {
+    return this.callMoodleAPI(
+      moodleConfig.functions.getAssignmentSubmissions,
+      { 
+        'assignmentids[0]': assignmentId,
+        status: 'submitted'
+      },
+      token
+    );
+  }
 }
 
 module.exports = new MoodleService();
