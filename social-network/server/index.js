@@ -85,16 +85,20 @@ io.on('connection', (socket) => {
 
   // User joins their personal room
   socket.on('join', async (userId) => {
-    socket.join(userId);
-    connectedUsers.set(userId, socket.id);
-    
-    // Update user online status
-    await User.findByIdAndUpdate(userId, { isOnline: true, lastActive: new Date() });
-    
-    // Notify friends that user is online
-    io.emit('user_online', { userId });
-    
-    console.log(`User ${userId} joined their room`);
+    try {
+      socket.join(userId);
+      connectedUsers.set(userId, socket.id);
+      
+      // Update user online status
+      await User.findByIdAndUpdate(userId, { isOnline: true, lastActive: new Date() });
+      
+      // Notify friends that user is online
+      io.emit('user_online', { userId });
+      
+      console.log(`User ${userId} joined their room`);
+    } catch (error) {
+      console.error('Error in socket join:', error);
+    }
   });
 
   // Join a conversation room for real-time messaging
@@ -152,21 +156,25 @@ io.on('connection', (socket) => {
 
   // User disconnects
   socket.on('disconnect', async () => {
-    // Remove from connected users and update online status
-    for (const [userId, socketId] of connectedUsers.entries()) {
-      if (socketId === socket.id) {
-        connectedUsers.delete(userId);
-        
-        // Update user online status
-        await User.findByIdAndUpdate(userId, { isOnline: false, lastActive: new Date() });
-        
-        // Notify friends that user is offline
-        io.emit('user_offline', { userId });
-        
-        break;
+    try {
+      // Remove from connected users and update online status
+      for (const [userId, socketId] of connectedUsers.entries()) {
+        if (socketId === socket.id) {
+          connectedUsers.delete(userId);
+          
+          // Update user online status
+          await User.findByIdAndUpdate(userId, { isOnline: false, lastActive: new Date() });
+          
+          // Notify friends that user is offline
+          io.emit('user_offline', { userId });
+          
+          break;
+        }
       }
+      console.log('User disconnected:', socket.id);
+    } catch (error) {
+      console.error('Error in socket disconnect:', error);
     }
-    console.log('User disconnected:', socket.id);
   });
 });
 

@@ -75,17 +75,25 @@ const Search = () => {
     }
   }, [query, activeTab]);
 
+  // Trigger search when query param changes
   useEffect(() => {
-    if (searchParams.get('q')) {
+    const queryParam = searchParams.get('q');
+    if (queryParam && queryParam !== query) {
+      setQuery(queryParam);
+    }
+  }, [searchParams, query]);
+
+  // Perform search when query or activeTab changes (only if there's a search term)
+  useEffect(() => {
+    if (query && query.length >= 2 && searchParams.get('q')) {
       performSearch();
     }
-  }, [searchParams, performSearch]);
+  }, [query, activeTab, performSearch, searchParams]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (query.trim()) {
       setSearchParams({ q: query, type: activeTab });
-      performSearch();
     }
   };
 
