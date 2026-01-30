@@ -20,6 +20,7 @@ const resourceRoutes = require('./routes/resources');
 const assignmentRoutes = require('./routes/assignments');
 const messageRoutes = require('./routes/messages');
 const searchRoutes = require('./routes/search');
+const uploadRoutes = require('./routes/upload');
 
 // Initialize express app
 const app = express();
@@ -28,7 +29,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:3000',
     methods: ['GET', 'POST']
   }
 });
@@ -38,7 +39,7 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -63,6 +64,7 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
