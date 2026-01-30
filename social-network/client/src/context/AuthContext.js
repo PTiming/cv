@@ -90,9 +90,20 @@ export const AuthProvider = ({ children }) => {
           payload: response.data
         });
         return { success: true };
+      } else {
+        // Handle unsuccessful response
+        const message = response.message || 'Login failed';
+        dispatch({ type: 'AUTH_FAILURE', payload: message });
+        return { success: false, error: message };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      // Handle both message string and errors array from validation
+      let message = 'Login failed';
+      if (error.response?.data?.message) {
+        message = error.response.data.message;
+      } else if (error.response?.data?.errors?.length > 0) {
+        message = error.response.data.errors[0].message;
+      }
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       return { success: false, error: message };
     }
@@ -108,9 +119,20 @@ export const AuthProvider = ({ children }) => {
           payload: response.data
         });
         return { success: true };
+      } else {
+        // Handle unsuccessful response
+        const message = response.message || 'Registration failed';
+        dispatch({ type: 'AUTH_FAILURE', payload: message });
+        return { success: false, error: message };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
+      // Handle both message string and errors array from validation
+      let message = 'Registration failed';
+      if (error.response?.data?.message) {
+        message = error.response.data.message;
+      } else if (error.response?.data?.errors?.length > 0) {
+        message = error.response.data.errors[0].message;
+      }
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       return { success: false, error: message };
     }

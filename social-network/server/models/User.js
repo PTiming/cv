@@ -173,9 +173,11 @@ userSchema.methods.toPublicProfile = function() {
     bio: this.bio,
     location: this.location,
     website: this.website,
-    followersCount: this.followers.length,
-    followingCount: this.following.length,
+    followersCount: this.followers ? this.followers.length : 0,
+    followingCount: this.following ? this.following.length : 0,
     moodleLinked: this.moodleLinked,
+    role: this.role,
+    isActive: this.isActive,
     createdAt: this.createdAt
   };
 };
