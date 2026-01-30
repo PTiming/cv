@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaRegHeart, FaComment, FaShare, FaEllipsisH, FaTrash, FaEdit } from 'react-icons/fa';
+import { 
+  FaHeart, FaRegHeart, FaComment, FaShare, FaEllipsisH, 
+  FaTrash, FaGlobe, FaUserFriends, FaLock, FaBook,
+  FaThumbsUp, FaRegThumbsUp
+} from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../common/Avatar';
@@ -8,18 +12,35 @@ import postService from '../../services/postService';
 import './PostCard.css';
 
 const PostCard = ({ post, onDelete, onUpdate }) => {
-  const [liked, setLiked] = useState(post.likes?.includes(post.author?._id) || false);
+  const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [showMenu, setShowMenu] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState(post.comments || []);
+  const [isLikeAnimating, setIsLikeAnimating] = useState(false);
   const { user } = useAuth();
 
   const isOwner = user?._id === post.author?._id;
+  const isModerator = user?.role === 'moderator' || user?.role === 'admin';
+
+  useEffect(() => {
+    setLiked(post.likes?.includes(user?._id) || false);
+  }, [post.likes, user?._id]);
+
+  const getVisibilityIcon = () => {
+    switch (post.visibility) {
+      case 'public': return <FaGlobe title="Public" />;
+      case 'followers': return <FaUserFriends title="Followers only" />;
+      case 'private': return <FaLock title="Private" />;
+      case 'course': return <FaBook title="Course members" />;
+      default: return <FaGlobe />;
+    }
+  };
 
   const handleLike = async () => {
     try {
+      setIsLikeAnimating(true);
       if (liked) {
         await postService.unlikePost(post._id);
         setLikeCount(prev => prev - 1);
@@ -28,8 +49,10 @@ const PostCard = ({ post, onDelete, onUpdate }) => {
         setLikeCount(prev => prev + 1);
       }
       setLiked(!liked);
+      setTimeout(() => setIsLikeAnimating(false), 300);
     } catch (error) {
       console.error('Error toggling like:', error);
+      setIsLikeAnimating(false);
     }
   };
 
@@ -71,10 +94,32 @@ const PostCard = ({ post, onDelete, onUpdate }) => {
     }
   };
 
+  const renderContent = (text) => {
+    // Parse mentions and hashtags
+    const parts = text.split(/(@\w+|#\w+)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('@')) {
+        const username = part.slice(1);
+        return (
+          <Link key={index} to={`/profile/${username}`} className="mention">
+            {part}
+          </Link>
+        );
+      } else if (part.startsWith('#')) {
+        return (
+          <Link key={index} to={`/search?q=${part.slice(1)}`} className="hashtag">
+            {part}
+          </Link>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
-    <div className="post-card">
+    <article className="post-card card">
       {/* Post Header */}
-      <div className="post-header">
+      <header className="post-header">
         <Link to={`/profile/${post.author?.username}`} className="post-author">
           <Avatar 
             src={post.author?.avatar} 
@@ -87,84 +132,124 @@ const PostCard = ({ post, onDelete, onUpdate }) => {
                 ? `${post.author.firstName} ${post.author.lastName}`
                 : post.author?.username}
             </span>
-            <span className="post-time">
-              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-              {post.isEdited && ' • Edited'}
-            </span>
+            <div className="post-meta">
+              <span className="post-time">
+                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+              </span>
+              <span className="post-visibility">
+                {getVisibilityIcon()}
+              </span>
+              {post.isEdited && <span className="edited-badge">Edited</span>}
+            </div>
           </div>
         </Link>
 
-        {isOwner && (
+        {(isOwner || isModerator) && (
           <div className="post-menu">
             <button 
               className="menu-btn"
               onClick={() => setShowMenu(!showMenu)}
+              aria-label="Post options"
             >
               <FaEllipsisH />
             </button>
             {showMenu && (
-              <div className="menu-dropdown">
-                <button onClick={handleDelete}>
-                  <FaTrash /> Delete
-                </button>
-              </div>
+              <>
+                <div className="menu-overlay" onClick={() => setShowMenu(false)} />
+                <div className="menu-dropdown">
+                  <button onClick={handleDelete} className="menu-item danger">
+                    <FaTrash /> 
+                    <span>Delete Post</span>
+                  </button>
+                </div>
+              </>
             )}
           </div>
         )}
-      </div>
+      </header>
 
       {/* Post Content */}
       <div className="post-content">
-        <p>{post.content}</p>
-        {post.images && post.images.length > 0 && (
-          <div className="post-images">
-            {post.images.map((img, index) => (
-              <img key={index} src={img.url} alt="Post" />
-            ))}
-          </div>
-        )}
+        <p>{renderContent(post.content)}</p>
       </div>
+
+      {/* Post Images */}
+      {post.images && post.images.length > 0 && (
+        <div className={`post-images images-${Math.min(post.images.length, 4)}`}>
+          {post.images.slice(0, 4).map((img, index) => (
+            <div key={index} className="image-container">
+              <img src={img.url} alt={`Post image ${index + 1}`} loading="lazy" />
+              {index === 3 && post.images.length > 4 && (
+                <div className="more-images">+{post.images.length - 4}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Shared Post */}
       {post.isShared && post.originalPost && (
         <div className="shared-post">
-          <Link to={`/profile/${post.originalPost.author?.username}`} className="shared-author">
-            <Avatar 
-              src={post.originalPost.author?.avatar} 
-              alt={post.originalPost.author?.username}
-              size="small"
-            />
-            <span>{post.originalPost.author?.username}</span>
-          </Link>
-          <p>{post.originalPost.content}</p>
+          <div className="shared-post-header">
+            <Link to={`/profile/${post.originalPost.author?.username}`} className="shared-author">
+              <Avatar 
+                src={post.originalPost.author?.avatar} 
+                alt={post.originalPost.author?.username}
+                size="small"
+              />
+              <div className="shared-author-info">
+                <span className="shared-author-name">{post.originalPost.author?.username}</span>
+                <span className="shared-post-time">
+                  {formatDistanceToNow(new Date(post.originalPost.createdAt), { addSuffix: true })}
+                </span>
+              </div>
+            </Link>
+          </div>
+          <p className="shared-post-content">{post.originalPost.content}</p>
         </div>
       )}
 
-      {/* Post Stats */}
-      <div className="post-stats">
-        <span>{likeCount} likes</span>
-        <span>{comments.length} comments</span>
-      </div>
+      {/* Engagement Stats */}
+      {(likeCount > 0 || comments.length > 0) && (
+        <div className="post-stats">
+          {likeCount > 0 && (
+            <div className="stat-item likes-stat">
+              <div className="like-icon-container">
+                <FaThumbsUp />
+              </div>
+              <span>{likeCount}</span>
+            </div>
+          )}
+          {comments.length > 0 && (
+            <button 
+              className="stat-item comments-stat"
+              onClick={() => setShowComments(!showComments)}
+            >
+              {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Post Actions */}
       <div className="post-actions">
         <button 
-          className={`action-btn ${liked ? 'liked' : ''}`}
+          className={`action-btn ${liked ? 'liked' : ''} ${isLikeAnimating ? 'animating' : ''}`}
           onClick={handleLike}
         >
-          {liked ? <FaHeart /> : <FaRegHeart />}
-          Like
+          {liked ? <FaThumbsUp /> : <FaRegThumbsUp />}
+          <span>Like</span>
         </button>
         <button 
-          className="action-btn"
+          className={`action-btn ${showComments ? 'active' : ''}`}
           onClick={() => setShowComments(!showComments)}
         >
           <FaComment />
-          Comment
+          <span>Comment</span>
         </button>
         <button className="action-btn" onClick={handleShare}>
           <FaShare />
-          Share
+          <span>Share</span>
         </button>
       </div>
 
@@ -173,13 +258,17 @@ const PostCard = ({ post, onDelete, onUpdate }) => {
         <div className="post-comments">
           <form onSubmit={handleComment} className="comment-form">
             <Avatar src={user?.avatar} alt={user?.username} size="small" />
-            <input
-              type="text"
-              placeholder="Write a comment..."
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-            <button type="submit" disabled={!comment.trim()}>Post</button>
+            <div className="comment-input-container">
+              <input
+                type="text"
+                placeholder="Write a comment..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+              {comment.trim() && (
+                <button type="submit" className="comment-submit">Post</button>
+              )}
+            </div>
           </form>
 
           <div className="comments-list">
@@ -190,21 +279,23 @@ const PostCard = ({ post, onDelete, onUpdate }) => {
                   alt={c.author?.username} 
                   size="small"
                 />
-                <div className="comment-content">
+                <div className="comment-bubble">
                   <Link to={`/profile/${c.author?.username}`} className="comment-author">
-                    {c.author?.username}
+                    {c.author?.firstName && c.author?.lastName 
+                      ? `${c.author.firstName} ${c.author.lastName}`
+                      : c.author?.username}
                   </Link>
-                  <p>{c.content}</p>
-                  <span className="comment-time">
-                    {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true })}
-                  </span>
+                  <p className="comment-text">{c.content}</p>
                 </div>
               </div>
             ))}
+            {comments.length === 0 && (
+              <p className="no-comments">No comments yet. Be the first to comment!</p>
+            )}
           </div>
         </div>
       )}
-    </div>
+    </article>
   );
 };
 

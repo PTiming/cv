@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { FaImage, FaVideo, FaSmile, FaGlobe, FaUserFriends, FaLock, FaCaretDown } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../common/Avatar';
 import postService from '../../services/postService';
@@ -9,7 +10,22 @@ const CreatePost = ({ onPostCreated, courseId = null }) => {
   const [visibility, setVisibility] = useState('public');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showVisibilityMenu, setShowVisibilityMenu] = useState(false);
+  const textareaRef = useRef(null);
   const { user } = useAuth();
+
+  const visibilityOptions = [
+    { value: 'public', icon: <FaGlobe />, label: 'Public', description: 'Anyone can see' },
+    { value: 'followers', icon: <FaUserFriends />, label: 'Followers', description: 'Only followers can see' },
+    { value: 'private', icon: <FaLock />, label: 'Only me', description: 'Only you can see' }
+  ];
+
+  const currentVisibility = visibilityOptions.find(v => v.value === visibility);
+
+  const handleFocus = () => {
+    setIsExpanded(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +51,7 @@ const CreatePost = ({ onPostCreated, courseId = null }) => {
       const response = await postService.createPost(postData);
       if (response.success) {
         setContent('');
+        setIsExpanded(false);
         if (onPostCreated) {
           onPostCreated(response.data);
         }
@@ -47,44 +64,105 @@ const CreatePost = ({ onPostCreated, courseId = null }) => {
   };
 
   return (
-    <div className="create-post">
+    <div className={`create-post card ${isExpanded ? 'expanded' : ''}`}>
       <form onSubmit={handleSubmit}>
-        <div className="create-post-header">
+        <div className="create-post-main">
           <Avatar 
             src={user?.avatar} 
             alt={user?.username} 
             size="medium"
           />
-          <textarea
-            placeholder="What's on your mind?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            maxLength={5000}
-            rows={3}
-          />
+          <div 
+            className="input-wrapper"
+            onClick={() => textareaRef.current?.focus()}
+          >
+            <textarea
+              ref={textareaRef}
+              placeholder={`What's on your mind, ${user?.firstName || user?.username}?`}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onFocus={handleFocus}
+              maxLength={5000}
+              rows={isExpanded ? 4 : 1}
+            />
+          </div>
         </div>
         
         {error && <div className="create-post-error">{error}</div>}
         
-        <div className="create-post-footer">
-          <select 
-            value={visibility} 
-            onChange={(e) => setVisibility(e.target.value)}
-            className="visibility-select"
-          >
-            <option value="public">🌍 Public</option>
-            <option value="followers">👥 Followers only</option>
-            <option value="private">🔒 Private</option>
-          </select>
-          
-          <button 
-            type="submit" 
-            className="post-btn"
-            disabled={loading || !content.trim()}
-          >
-            {loading ? 'Posting...' : 'Post'}
-          </button>
+        <div className="create-post-divider" />
+        
+        <div className="create-post-actions">
+          <div className="action-buttons">
+            <button type="button" className="action-item">
+              <FaImage className="icon-image" />
+              <span>Photo</span>
+            </button>
+            <button type="button" className="action-item">
+              <FaVideo className="icon-video" />
+              <span>Video</span>
+            </button>
+            <button type="button" className="action-item">
+              <FaSmile className="icon-feeling" />
+              <span>Feeling</span>
+            </button>
+          </div>
         </div>
+
+        {isExpanded && (
+          <div className="create-post-footer">
+            <div className="visibility-selector">
+              <button 
+                type="button"
+                className="visibility-btn"
+                onClick={() => setShowVisibilityMenu(!showVisibilityMenu)}
+              >
+                {currentVisibility?.icon}
+                <span>{currentVisibility?.label}</span>
+                <FaCaretDown />
+              </button>
+              
+              {showVisibilityMenu && (
+                <>
+                  <div 
+                    className="visibility-overlay" 
+                    onClick={() => setShowVisibilityMenu(false)} 
+                  />
+                  <div className="visibility-menu">
+                    <div className="visibility-menu-header">
+                      <h4>Who can see your post?</h4>
+                    </div>
+                    {visibilityOptions.map(option => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`visibility-option ${visibility === option.value ? 'selected' : ''}`}
+                        onClick={() => {
+                          setVisibility(option.value);
+                          setShowVisibilityMenu(false);
+                        }}
+                      >
+                        <div className="visibility-option-icon">{option.icon}</div>
+                        <div className="visibility-option-info">
+                          <span className="visibility-option-label">{option.label}</span>
+                          <span className="visibility-option-desc">{option.description}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <button 
+              type="submit" 
+              className="post-btn"
+              disabled={loading || !content.trim()}
+            >
+              {loading ? 'Posting...' : 'Post'}
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

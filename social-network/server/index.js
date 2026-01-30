@@ -14,6 +14,7 @@ const postRoutes = require('./routes/posts');
 const commentRoutes = require('./routes/comments');
 const notificationRoutes = require('./routes/notifications');
 const moodleRoutes = require('./routes/moodle');
+const adminRoutes = require('./routes/admin');
 
 // Initialize express app
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/moodle', moodleRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

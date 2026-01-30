@@ -13,6 +13,7 @@ import Profile from './components/profile/Profile';
 import Notifications from './components/notifications/Notifications';
 import MoodleDashboard from './components/moodle/MoodleDashboard';
 import CourseDetail from './components/moodle/CourseDetail';
+import AdminDashboard from './components/admin/AdminDashboard';
 
 import './App.css';
 
@@ -26,6 +27,25 @@ const ProtectedRoute = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+// Admin Route Component (only for admin/moderator)
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+
+  if (loading) {
+    return <Loading text="Loading..." />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!['admin', 'moderator'].includes(user?.role)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -139,6 +159,18 @@ function AppContent() {
                 <CourseDetail />
               </AppLayout>
             </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AppLayout>
+                <AdminDashboard />
+              </AppLayout>
+            </AdminRoute>
           }
         />
 

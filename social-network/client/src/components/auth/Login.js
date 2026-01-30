@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaEnvelope, FaLock, FaGraduationCap, FaUsers, FaBook, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import './Auth.css';
 
@@ -28,53 +29,99 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
+    <div className="auth-page">
+      <div className="auth-left">
+        <div className="auth-branding">
+          <div className="auth-logo">S</div>
           <h1>SocialLMS</h1>
-          <p>Connect with classmates and manage your courses</p>
+          <p>Connect with classmates, share knowledge, and manage your learning journey all in one place.</p>
         </div>
+        
+        <div className="auth-features">
+          <div className="feature-item">
+            <FaUsers />
+            <span>Connect with classmates and educators</span>
+          </div>
+          <div className="feature-item">
+            <FaBook />
+            <span>Integrated Moodle LMS courses</span>
+          </div>
+          <div className="feature-item">
+            <FaGraduationCap />
+            <span>Track your academic progress</span>
+          </div>
+          <div className="feature-item">
+            <FaCheckCircle />
+            <span>Stay updated with deadlines</span>
+          </div>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <h2>Sign In</h2>
-          
-          {error && <div className="auth-error">{error}</div>}
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-            />
+      <div className="auth-right">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h2>Welcome back</h2>
+            <p>Sign in to continue to SocialLMS</p>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-            />
+          <form onSubmit={handleSubmit} className="auth-form">
+            {error && (
+              <div className="auth-error">
+                <FaExclamationCircle />
+                {error}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="email">Email address</label>
+              <div className="input-wrapper">
+                <FaEnvelope />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <div className="input-wrapper">
+                <FaLock />
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? (
+                <>
+                  <div className="spinner" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+
+          <div className="auth-footer">
+            <p>
+              Don't have an account?
+              <Link to="/register">Create account</Link>
+            </p>
           </div>
-
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <p>
-            Don't have an account? <Link to="/register">Sign Up</Link>
-          </p>
         </div>
       </div>
     </div>

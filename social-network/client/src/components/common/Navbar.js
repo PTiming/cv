@@ -1,65 +1,195 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaHome, FaCompass, FaBell, FaUser, FaBook, FaSignOutAlt, FaSearch } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { 
+  FaHome, FaCompass, FaBell, FaUser, FaBook, FaSignOutAlt, 
+  FaSearch, FaCog, FaUserShield, FaCaretDown, FaTimes
+} from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import Avatar from './Avatar';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const { unreadCount } = useSocket();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   if (!isAuthenticated) return null;
+
+  const isActive = (path) => location.pathname === path;
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setShowMobileSearch(false);
+    }
+  };
+
+  const isAdminOrMod = user?.role === 'admin' || user?.role === 'moderator';
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          SocialLMS
-        </Link>
-
-        <div className="navbar-search">
-          <FaSearch className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="search-input"
-          />
+        {/* Left Section - Logo */}
+        <div className="navbar-left">
+          <Link to="/" className="navbar-logo">
+            <div className="logo-icon">S</div>
+            <span className="logo-text">SocialLMS</span>
+          </Link>
         </div>
 
-        <div className="navbar-links">
-          <Link to="/" className="nav-link" title="Home">
+        {/* Center Section - Search */}
+        <div className={`navbar-center ${showMobileSearch ? 'mobile-active' : ''}`}>
+          <form onSubmit={handleSearch} className="search-form">
+            <FaSearch className="search-icon" />
+            <input 
+              type="text" 
+              placeholder="Search SocialLMS" 
+              className="search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {showMobileSearch && (
+              <button 
+                type="button" 
+                className="search-close"
+                onClick={() => setShowMobileSearch(false)}
+              >
+                <FaTimes />
+              </button>
+            )}
+          </form>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="navbar-nav">
+          <Link 
+            to="/" 
+            className={`nav-item ${isActive('/') ? 'active' : ''}`} 
+            title="Home"
+          >
             <FaHome />
-            <span>Home</span>
           </Link>
           
-          <Link to="/explore" className="nav-link" title="Explore">
+          <Link 
+            to="/explore" 
+            className={`nav-item ${isActive('/explore') ? 'active' : ''}`} 
+            title="Explore"
+          >
             <FaCompass />
-            <span>Explore</span>
           </Link>
 
-          <Link to="/moodle" className="nav-link" title="Courses">
+          <Link 
+            to="/moodle" 
+            className={`nav-item ${isActive('/moodle') ? 'active' : ''}`} 
+            title="Courses"
+          >
             <FaBook />
-            <span>Courses</span>
           </Link>
 
-          <Link to="/notifications" className="nav-link notification-link" title="Notifications">
+          <Link 
+            to="/notifications" 
+            className={`nav-item notification-item ${isActive('/notifications') ? 'active' : ''}`} 
+            title="Notifications"
+          >
             <FaBell />
             {unreadCount > 0 && (
-              <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              <span className="notification-badge">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
             )}
-            <span>Notifications</span>
           </Link>
+        </div>
 
-          <Link to={`/profile/${user?.username}`} className="nav-link" title="Profile">
-            <FaUser />
-            <span>Profile</span>
-          </Link>
-
-          <button onClick={logout} className="nav-link logout-btn" title="Logout">
-            <FaSignOutAlt />
-            <span>Logout</span>
+        {/* Right Section - User Menu */}
+        <div className="navbar-right">
+          <button 
+            className="mobile-search-btn"
+            onClick={() => setShowMobileSearch(true)}
+          >
+            <FaSearch />
           </button>
+
+          <div className="user-menu">
+            <button 
+              className="user-menu-trigger"
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <Avatar 
+                src={user?.avatar} 
+                alt={user?.username} 
+                size="small"
+              />
+              <span className="user-name">{user?.firstName || user?.username}</span>
+              <FaCaretDown className={`dropdown-arrow ${showDropdown ? 'open' : ''}`} />
+            </button>
+
+            {showDropdown && (
+              <>
+                <div className="dropdown-overlay" onClick={() => setShowDropdown(false)} />
+                <div className="dropdown-menu">
+                  <div className="dropdown-header">
+                    <Avatar src={user?.avatar} alt={user?.username} size="medium" />
+                    <div className="dropdown-user-info">
+                      <span className="dropdown-name">
+                        {user?.firstName && user?.lastName 
+                          ? `${user.firstName} ${user.lastName}`
+                          : user?.username}
+                      </span>
+                      <span className="dropdown-role">{user?.role}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="dropdown-divider" />
+                  
+                  <Link 
+                    to={`/profile/${user?.username}`} 
+                    className="dropdown-item"
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    <FaUser />
+                    <span>View Profile</span>
+                  </Link>
+                  
+                  <Link 
+                    to="/settings" 
+                    className="dropdown-item"
+                    onClick={() => setShowDropdown(false)}
+                  >
+                    <FaCog />
+                    <span>Settings</span>
+                  </Link>
+
+                  {isAdminOrMod && (
+                    <Link 
+                      to="/admin" 
+                      className="dropdown-item admin-item"
+                      onClick={() => setShowDropdown(false)}
+                    >
+                      <FaUserShield />
+                      <span>Admin Panel</span>
+                    </Link>
+                  )}
+                  
+                  <div className="dropdown-divider" />
+                  
+                  <button 
+                    onClick={() => { logout(); setShowDropdown(false); }} 
+                    className="dropdown-item logout-item"
+                  >
+                    <FaSignOutAlt />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>

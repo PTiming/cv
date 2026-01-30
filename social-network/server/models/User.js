@@ -85,9 +85,33 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'moderator', 'admin'],
+    enum: ['user', 'moderator', 'admin', 'instructor', 'student'],
     default: 'user'
   },
+  // Ban information
+  banReason: {
+    type: String,
+    maxlength: 500
+  },
+  bannedAt: {
+    type: Date
+  },
+  bannedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  // Warnings
+  warnings: [{
+    reason: String,
+    issuedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    issuedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   lastActive: {
     type: Date,
     default: Date.now
