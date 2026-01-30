@@ -182,6 +182,7 @@ userSchema.methods.toPublicProfile = function() {
   return {
     _id: this._id,
     username: this.username,
+    email: this.email,
     firstName: this.firstName,
     lastName: this.lastName,
     fullName: this.fullName,

@@ -93,12 +93,12 @@ const generalLimiter = createRateLimiter({
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 
-// Auth rate limiter: More strict - 10 attempts per 15 minutes
+// Auth rate limiter: 30 attempts per 15 minutes (more lenient for development)
 const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 30,
   message: 'Too many authentication attempts, please try again after 15 minutes',
-  skipFailedRequests: false
+  skipFailedRequests: true  // Don't count validation errors
 });
 
 // Create post rate limiter: 30 posts per hour
