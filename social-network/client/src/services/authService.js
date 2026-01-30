@@ -3,22 +3,42 @@ import api from './api';
 const authService = {
   // Register new user
   register: async (userData) => {
-    const response = await api.post('/auth/register', userData);
-    if (response.data.success) {
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.data.user));
+    try {
+      const response = await api.post('/auth/register', userData);
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+      }
+      return response.data;
+    } catch (error) {
+      // Extract error message from response
+      const message = error.response?.data?.message 
+        || error.response?.data?.errors?.[0]?.msg 
+        || error.response?.data?.errors?.[0]?.message
+        || error.message 
+        || 'Registration failed';
+      throw { response: { data: { success: false, message } } };
     }
-    return response.data;
   },
 
   // Login user
   login: async (credentials) => {
-    const response = await api.post('/auth/login', credentials);
-    if (response.data.success) {
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.data.user));
+    try {
+      const response = await api.post('/auth/login', credentials);
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+      }
+      return response.data;
+    } catch (error) {
+      // Extract error message from response
+      const message = error.response?.data?.message 
+        || error.response?.data?.errors?.[0]?.msg 
+        || error.response?.data?.errors?.[0]?.message
+        || error.message 
+        || 'Login failed';
+      throw { response: { data: { success: false, message } } };
     }
-    return response.data;
   },
 
   // Logout user
