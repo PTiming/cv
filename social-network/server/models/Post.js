@@ -55,8 +55,13 @@ const postSchema = new mongoose.Schema({
   },
   visibility: {
     type: String,
-    enum: ['public', 'followers', 'private', 'course'],
+    enum: ['public', 'followers', 'private', 'course', 'group'],
     default: 'public'
+  },
+  // Group post
+  group: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group'
   },
   tags: [{
     type: String,

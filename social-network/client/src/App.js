@@ -14,6 +14,11 @@ import Notifications from './components/notifications/Notifications';
 import MoodleDashboard from './components/moodle/MoodleDashboard';
 import CourseDetail from './components/moodle/CourseDetail';
 import AdminDashboard from './components/admin/AdminDashboard';
+import Messages from './components/messages/Messages';
+import Groups from './components/groups/Groups';
+import Search from './components/search/Search';
+import Resources from './components/resources/Resources';
+import Assignments from './components/assignments/Assignments';
 
 import './App.css';
 
@@ -157,6 +162,56 @@ function AppContent() {
             <ProtectedRoute>
               <AppLayout>
                 <CourseDetail />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Messages />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Groups />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Search />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Resources />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assignments"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Assignments />
               </AppLayout>
             </ProtectedRoute>
           }

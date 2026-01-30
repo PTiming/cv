@@ -1,22 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   FaHome, FaCompass, FaBell, FaUser, FaBook, FaSignOutAlt, 
-  FaSearch, FaCog, FaUserShield, FaCaretDown, FaTimes
+  FaSearch, FaCog, FaUserShield, FaCaretDown, FaTimes,
+  FaComments, FaUsers, FaFolderOpen, FaTasks
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import * as messageService from '../../services/messageService';
 import Avatar from './Avatar';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
-  const { unreadCount } = useSocket();
+  const { unreadCount, socket } = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // Fetch unread message count
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      try {
+        const { data } = await messageService.getUnreadCount();
+        setUnreadMessages(data.data.unreadCount);
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUnreadMessages();
+    }
+  }, [isAuthenticated]);
+
+  // Listen for new messages
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = () => {
+      setUnreadMessages(prev => prev + 1);
+    };
+
+    socket.on('new_message', handleNewMessage);
+
+    return () => {
+      socket.off('new_message', handleNewMessage);
+    };
+  }, [socket]);
 
   if (!isAuthenticated) return null;
 
@@ -83,6 +117,43 @@ const Navbar = () => {
             title="Explore"
           >
             <FaCompass />
+          </Link>
+
+          <Link 
+            to="/messages" 
+            className={`nav-item notification-item ${isActive('/messages') ? 'active' : ''}`} 
+            title="Messages"
+          >
+            <FaComments />
+            {unreadMessages > 0 && (
+              <span className="notification-badge">
+                {unreadMessages > 99 ? '99+' : unreadMessages}
+              </span>
+            )}
+          </Link>
+
+          <Link 
+            to="/groups" 
+            className={`nav-item ${isActive('/groups') ? 'active' : ''}`} 
+            title="Groups"
+          >
+            <FaUsers />
+          </Link>
+
+          <Link 
+            to="/resources" 
+            className={`nav-item ${isActive('/resources') ? 'active' : ''}`} 
+            title="Resources"
+          >
+            <FaFolderOpen />
+          </Link>
+
+          <Link 
+            to="/assignments" 
+            className={`nav-item ${isActive('/assignments') ? 'active' : ''}`} 
+            title="Assignments"
+          >
+            <FaTasks />
           </Link>
 
           <Link 

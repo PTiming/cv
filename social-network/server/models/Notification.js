@@ -23,7 +23,19 @@ const notificationSchema = new mongoose.Schema({
       'moodle_grade',
       'moodle_message',
       'moodle_announcement',
-      'moodle_deadline'
+      'moodle_deadline',
+      // Group notifications
+      'group_join_request',
+      'group_join',
+      'group_join_approved',
+      'group_added',
+      // Resource notifications
+      'resource_like',
+      'resource_comment',
+      // Assignment notifications
+      'assignment_invite',
+      'assignment_comment',
+      'task_assigned'
     ],
     required: true
   },
@@ -34,6 +46,19 @@ const notificationSchema = new mongoose.Schema({
   comment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Comment'
+  },
+  // Related entities
+  relatedGroup: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group'
+  },
+  relatedResource: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Resource'
+  },
+  relatedAssignment: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Assignment'
   },
   // Moodle-specific notification data
   moodleData: {

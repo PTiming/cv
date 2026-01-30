@@ -115,6 +115,23 @@ const userSchema = new mongoose.Schema({
   lastActive: {
     type: Date,
     default: Date.now
+  },
+  // Recent searches
+  recentSearches: [{
+    query: String,
+    type: {
+      type: String,
+      enum: ['all', 'posts', 'users', 'groups', 'resources']
+    },
+    searchedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  // Online status
+  isOnline: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,

@@ -15,6 +15,11 @@ const commentRoutes = require('./routes/comments');
 const notificationRoutes = require('./routes/notifications');
 const moodleRoutes = require('./routes/moodle');
 const adminRoutes = require('./routes/admin');
+const groupRoutes = require('./routes/groups');
+const resourceRoutes = require('./routes/resources');
+const assignmentRoutes = require('./routes/assignments');
+const messageRoutes = require('./routes/messages');
+const searchRoutes = require('./routes/search');
 
 // Initialize express app
 const app = express();
@@ -53,6 +58,11 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/moodle', moodleRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -68,15 +78,33 @@ app.use(errorHandler);
 
 // Socket.IO connection handling
 const connectedUsers = new Map();
+const User = require('./models/User');
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   // User joins their personal room
-  socket.on('join', (userId) => {
+  socket.on('join', async (userId) => {
     socket.join(userId);
     connectedUsers.set(userId, socket.id);
+    
+    // Update user online status
+    await User.findByIdAndUpdate(userId, { isOnline: true, lastActive: new Date() });
+    
+    // Notify friends that user is online
+    io.emit('user_online', { userId });
+    
     console.log(`User ${userId} joined their room`);
+  });
+
+  // Join a conversation room for real-time messaging
+  socket.on('join_conversation', (conversationId) => {
+    socket.join(`conversation_${conversationId}`);
+  });
+
+  // Leave a conversation room
+  socket.on('leave_conversation', (conversationId) => {
+    socket.leave(`conversation_${conversationId}`);
   });
 
   // Handle new notification
@@ -86,6 +114,10 @@ io.on('connection', (socket) => {
 
   // Handle new message
   socket.on('message', (data) => {
+    // Emit to conversation room
+    io.to(`conversation_${data.conversationId}`).emit('new_message', data);
+    
+    // Also emit to individual participants
     data.participants.forEach(participantId => {
       if (participantId !== data.senderId) {
         io.to(participantId).emit('new_message', data);
@@ -95,7 +127,8 @@ io.on('connection', (socket) => {
 
   // Handle typing indicator
   socket.on('typing', (data) => {
-    socket.to(data.conversationId).emit('user_typing', {
+    socket.to(`conversation_${data.conversationId}`).emit('user_typing', {
+      conversationId: data.conversationId,
       userId: data.userId,
       username: data.username
     });
@@ -103,17 +136,33 @@ io.on('connection', (socket) => {
 
   // Handle stop typing
   socket.on('stop_typing', (data) => {
-    socket.to(data.conversationId).emit('user_stopped_typing', {
+    socket.to(`conversation_${data.conversationId}`).emit('user_stopped_typing', {
+      conversationId: data.conversationId,
+      userId: data.userId
+    });
+  });
+
+  // Handle message read
+  socket.on('message_read', (data) => {
+    io.to(`conversation_${data.conversationId}`).emit('messages_read', {
+      conversationId: data.conversationId,
       userId: data.userId
     });
   });
 
   // User disconnects
-  socket.on('disconnect', () => {
-    // Remove from connected users
+  socket.on('disconnect', async () => {
+    // Remove from connected users and update online status
     for (const [userId, socketId] of connectedUsers.entries()) {
       if (socketId === socket.id) {
         connectedUsers.delete(userId);
+        
+        // Update user online status
+        await User.findByIdAndUpdate(userId, { isOnline: false, lastActive: new Date() });
+        
+        // Notify friends that user is offline
+        io.emit('user_offline', { userId });
+        
         break;
       }
     }
