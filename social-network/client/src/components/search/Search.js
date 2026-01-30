@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import * as searchService from '../../services/searchService';
-import * as userService from '../../services/userService';
+import userService from '../../services/userService';
 import PostCard from '../feed/PostCard';
 import Avatar from '../common/Avatar';
 import Loading from '../common/Loading';
