@@ -13,8 +13,10 @@ const {
 } = require('../controllers/courseController');
 const { protect, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const { apiLimiter, sensitiveLimiter } = require('../middleware/rateLimit');
 
-// All routes require authentication
+// All routes require rate limiting and authentication
+router.use(apiLimiter);
 router.use(protect);
 
 // Get all courses
@@ -29,11 +31,11 @@ router.get('/my-courses', (req, res, next) => {
 // Get specific user's enrolled courses
 router.get('/user/:userId', getUserCourses);
 
-// Sync courses from Moodle (Admin only)
-router.post('/sync', authorize('admin'), syncCourses);
+// Sync courses from Moodle (Admin only) - sensitive operation
+router.post('/sync', sensitiveLimiter, authorize('admin'), syncCourses);
 
-// Enroll user in course (Teacher/Admin only)
-router.post('/enroll', authorize('teacher', 'admin'), enrollValidation, validate, enrollUser);
+// Enroll user in course (Teacher/Admin only) - sensitive operation
+router.post('/enroll', sensitiveLimiter, authorize('teacher', 'admin'), enrollValidation, validate, enrollUser);
 
 // Get single course
 router.get('/:courseId', courseIdValidation, validate, getCourseById);

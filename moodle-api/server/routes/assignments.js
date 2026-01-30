@@ -10,8 +10,10 @@ const {
 } = require('../controllers/assignmentController');
 const { protect, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const { apiLimiter } = require('../middleware/rateLimit');
 
-// All routes require authentication
+// All routes require rate limiting and authentication
+router.use(apiLimiter);
 router.use(protect);
 
 // Get assignments for courses

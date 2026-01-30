@@ -12,8 +12,10 @@ const {
 } = require('../controllers/gradeController');
 const { protect, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const { apiLimiter, sensitiveLimiter } = require('../middleware/rateLimit');
 
-// All routes require authentication
+// All routes require rate limiting and authentication
+router.use(apiLimiter);
 router.use(protect);
 
 // Get grades for a course
@@ -28,10 +30,10 @@ router.get('/items/:courseId', getGradeItems);
 // Get user's grade report
 router.get('/report/:courseId/:userId', getUserGradeReport);
 
-// Submit/update grade (Teacher/Admin only)
-router.post('/submit', authorize('teacher', 'admin'), submitGradeValidation, validate, submitGrade);
+// Submit/update grade (Teacher/Admin only) - sensitive operation
+router.post('/submit', sensitiveLimiter, authorize('teacher', 'admin'), submitGradeValidation, validate, submitGrade);
 
-// Sync grades from Moodle (Admin only)
-router.post('/sync/:courseId', authorize('admin'), syncGrades);
+// Sync grades from Moodle (Admin only) - sensitive operation
+router.post('/sync/:courseId', sensitiveLimiter, authorize('admin'), syncGrades);
 
 module.exports = router;

@@ -10,6 +10,7 @@ A MERN stack REST API for integrating with Moodle Learning Management System (LM
 - **Grade Management**: Retrieve and submit grades, sync grade data
 - **Assignment Tracking**: Get assignments, submissions, and quiz attempts
 - **Data Synchronization**: Sync Moodle data to local MongoDB database
+- **Rate Limiting**: Protection against abuse with configurable rate limits
 
 ## Prerequisites
 
@@ -216,6 +217,22 @@ All errors return JSON responses with the following structure:
   "success": false,
   "message": "Error description",
   "errors": [] // Validation errors if applicable
+}
+```
+
+## Rate Limiting
+
+The API implements rate limiting to protect against abuse:
+
+- **Authentication endpoints** (login/register): 10 requests per 15 minutes
+- **General API endpoints**: 100 requests per 15 minutes
+- **Sensitive operations** (grading, sync): 20 requests per 15 minutes
+
+When rate limited, the API returns:
+```json
+{
+  "success": false,
+  "message": "Too many requests from this IP, please try again after 15 minutes"
 }
 ```
 
