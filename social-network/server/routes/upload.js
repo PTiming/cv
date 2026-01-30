@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 const { uploadSingle, uploadMultiple, uploadProfilePicture, handleUploadError } = require('../middleware/upload');
 
 // Helper to get file URL
