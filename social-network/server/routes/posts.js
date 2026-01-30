@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const router = express.Router();
 const validate = require('../middleware/validate');
 const { auth, optionalAuth } = require('../middleware/auth');
+const { createPostLimiter, commentLimiter } = require('../middleware/rateLimiter');
 const postController = require('../controllers/postController');
 const commentController = require('../controllers/commentController');
 
@@ -19,7 +20,7 @@ router.get('/search', postController.searchPosts);
 router.get('/course/:courseId', auth, postController.getCoursePosts);
 
 // @route   POST /api/posts
-router.post('/', auth, [
+router.post('/', auth, createPostLimiter, [
   body('content')
     .trim()
     .isLength({ min: 1, max: 5000 })
@@ -55,7 +56,7 @@ router.post('/:id/like', auth, postController.likePost);
 router.delete('/:id/like', auth, postController.unlikePost);
 
 // @route   POST /api/posts/:id/share
-router.post('/:id/share', auth, [
+router.post('/:id/share', auth, createPostLimiter, [
   body('content')
     .optional()
     .trim()
@@ -65,7 +66,7 @@ router.post('/:id/share', auth, [
 
 // Comment routes
 // @route   POST /api/posts/:postId/comments
-router.post('/:postId/comments', auth, [
+router.post('/:postId/comments', auth, commentLimiter, [
   body('content')
     .trim()
     .isLength({ min: 1, max: 1000 })

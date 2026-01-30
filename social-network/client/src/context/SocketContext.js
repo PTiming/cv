@@ -11,7 +11,10 @@ export const SocketProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+    // Store userId in a ref-like approach to avoid stale closures
+    const userId = user?._id;
+    
+    if (isAuthenticated && userId) {
       const socketUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
       const newSocket = io(socketUrl, {
         transports: ['websocket', 'polling']
@@ -19,7 +22,7 @@ export const SocketProvider = ({ children }) => {
 
       newSocket.on('connect', () => {
         console.log('Socket connected');
-        newSocket.emit('join', user._id);
+        newSocket.emit('join', userId);
       });
 
       newSocket.on('new_notification', (notification) => {
@@ -37,7 +40,7 @@ export const SocketProvider = ({ children }) => {
         newSocket.close();
       };
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?._id]);
 
   const value = {
     socket,

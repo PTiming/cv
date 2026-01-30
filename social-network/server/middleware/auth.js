@@ -35,9 +35,19 @@ const auth = async (req, res, next) => {
       });
     }
 
-    // Update last active
-    user.lastActive = new Date();
-    await user.save();
+    // Update last active only if more than 5 minutes since last update
+    // This throttles database writes to improve performance
+    const LAST_ACTIVE_THRESHOLD = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const timeSinceLastActive = Date.now() - new Date(user.lastActive).getTime();
+    
+    if (timeSinceLastActive > LAST_ACTIVE_THRESHOLD) {
+      user.lastActive = new Date();
+      // Use updateOne to avoid triggering middleware and improve performance
+      await user.constructor.updateOne(
+        { _id: user._id },
+        { $set: { lastActive: user.lastActive } }
+      );
+    }
 
     req.user = user;
     req.token = token;

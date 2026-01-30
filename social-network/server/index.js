@@ -5,6 +5,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+const { generalLimiter, authLimiter } = require('./middleware/rateLimiter');
 
 // Route imports
 const authRoutes = require('./routes/auth');
@@ -37,11 +38,14 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Apply general rate limiting to all API routes
+app.use('/api', generalLimiter);
+
 // Static files for uploads
 app.use('/uploads', express.static('uploads'));
 
-// API Routes
-app.use('/api/auth', authRoutes);
+// API Routes - Auth routes have additional stricter rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);

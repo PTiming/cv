@@ -47,10 +47,13 @@ router.post('/login', [
 router.get('/me', auth, authController.getMe);
 
 // @route   POST /api/auth/link-moodle
+// Note: Moodle credentials are used only for authentication and are not stored.
+// Ensure MOODLE_URL in .env uses HTTPS to protect credentials in transit.
 router.post('/link-moodle', auth, [
   body('moodleUsername')
     .notEmpty()
-    .withMessage('Moodle username is required'),
+    .withMessage('Moodle username is required')
+    .trim(),
   body('moodlePassword')
     .notEmpty()
     .withMessage('Moodle password is required'),

@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     loadUser();
-  }, []);
+  }, [state.token]);
 
   const login = async (credentials) => {
     dispatch({ type: 'AUTH_LOADING' });

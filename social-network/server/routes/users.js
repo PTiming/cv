@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const router = express.Router();
 const validate = require('../middleware/validate');
 const { auth, optionalAuth } = require('../middleware/auth');
+const { followLimiter } = require('../middleware/rateLimiter');
 const userController = require('../controllers/userController');
 
 // @route   GET /api/users/search
@@ -41,10 +42,10 @@ router.put('/profile', auth, [
 ], userController.updateProfile);
 
 // @route   POST /api/users/:username/follow
-router.post('/:username/follow', auth, userController.followUser);
+router.post('/:username/follow', auth, followLimiter, userController.followUser);
 
 // @route   DELETE /api/users/:username/follow
-router.delete('/:username/follow', auth, userController.unfollowUser);
+router.delete('/:username/follow', auth, followLimiter, userController.unfollowUser);
 
 // @route   GET /api/users/:username/followers
 router.get('/:username/followers', userController.getFollowers);
