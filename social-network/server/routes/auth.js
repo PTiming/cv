@@ -80,4 +80,61 @@ router.put('/change-password', auth, [
   validate
 ], authController.changePassword);
 
+// ==================== 2FA Routes ====================
+
+// @route   POST /api/auth/2fa/setup
+// @desc    Setup 2FA - Generate secret and QR code
+router.post('/2fa/setup', auth, authController.setup2FA);
+
+// @route   POST /api/auth/2fa/enable
+// @desc    Enable 2FA after verifying setup code
+router.post('/2fa/enable', auth, [
+  body('code')
+    .notEmpty()
+    .withMessage('Verification code is required')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Code must be 6 digits'),
+  validate
+], authController.enable2FA);
+
+// @route   POST /api/auth/2fa/disable
+// @desc    Disable 2FA
+router.post('/2fa/disable', auth, [
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required'),
+  body('code')
+    .notEmpty()
+    .withMessage('2FA code is required'),
+  validate
+], authController.disable2FA);
+
+// @route   POST /api/auth/2fa/verify
+// @desc    Verify 2FA code during login
+router.post('/2fa/verify', [
+  body('tempToken')
+    .notEmpty()
+    .withMessage('Token is required'),
+  body('code')
+    .notEmpty()
+    .withMessage('Verification code is required'),
+  validate
+], authController.verify2FA);
+
+// @route   GET /api/auth/2fa/status
+// @desc    Get 2FA status
+router.get('/2fa/status', auth, authController.get2FAStatus);
+
+// @route   POST /api/auth/2fa/backup-codes
+// @desc    Regenerate backup codes
+router.post('/2fa/backup-codes', auth, [
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required'),
+  body('code')
+    .notEmpty()
+    .withMessage('2FA code is required'),
+  validate
+], authController.regenerateBackupCodes);
+
 module.exports = router;

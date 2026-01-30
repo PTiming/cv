@@ -229,12 +229,12 @@ const Navbar = () => {
                   </Link>
                   
                   <Link 
-                    to="/settings" 
+                    to="/settings/security" 
                     className="dropdown-item"
                     onClick={() => setShowDropdown(false)}
                   >
                     <FaCog />
-                    <span>Settings</span>
+                    <span>Security Settings</span>
                   </Link>
 
                   {isAdminOrMod && (

@@ -25,6 +25,12 @@ const authService = {
   login: async (credentials) => {
     try {
       const response = await api.post('/auth/login', credentials);
+      
+      // Check if 2FA is required
+      if (response.data.requireTwoFactor) {
+        return response.data; // Return without storing token
+      }
+      
       if (response.data.success) {
         localStorage.setItem('token', response.data.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
@@ -39,6 +45,12 @@ const authService = {
         || 'Login failed';
       throw { response: { data: { success: false, message } } };
     }
+  },
+
+  // Set auth data after 2FA verification
+  setAuthData: (token, user) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
   },
 
   // Logout user

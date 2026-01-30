@@ -132,7 +132,23 @@ const userSchema = new mongoose.Schema({
   isOnline: {
     type: Boolean,
     default: false
-  }
+  },
+  // Two-Factor Authentication
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorSecret: {
+    type: String,
+    select: false
+  },
+  twoFactorBackupCodes: [{
+    code: String,
+    used: {
+      type: Boolean,
+      default: false
+    }
+  }]
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -178,6 +194,7 @@ userSchema.methods.toPublicProfile = function() {
     moodleLinked: this.moodleLinked,
     role: this.role,
     isActive: this.isActive,
+    twoFactorEnabled: this.twoFactorEnabled || false,
     createdAt: this.createdAt
   };
 };

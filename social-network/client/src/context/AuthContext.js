@@ -84,6 +84,17 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'AUTH_LOADING' });
     try {
       const response = await authService.login(credentials);
+      
+      // Check if 2FA is required
+      if (response.requireTwoFactor) {
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return { 
+          success: false, 
+          requireTwoFactor: true, 
+          tempToken: response.data.tempToken 
+        };
+      }
+      
       if (response.success) {
         dispatch({
           type: 'AUTH_SUCCESS',
@@ -107,6 +118,15 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       return { success: false, error: message };
     }
+  };
+
+  // Login with 2FA verified data
+  const loginWith2FA = (data) => {
+    authService.setAuthData(data.token, data.user);
+    dispatch({
+      type: 'AUTH_SUCCESS',
+      payload: data
+    });
   };
 
   const register = async (userData) => {
@@ -157,6 +177,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         ...state,
         login,
+        loginWith2FA,
         register,
         logout,
         updateUser,

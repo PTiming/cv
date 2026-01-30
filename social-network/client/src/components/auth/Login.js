@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaGraduationCap, FaUsers, FaBook, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import TwoFactorVerify from './TwoFactorVerify';
 import './Auth.css';
 
 const Login = () => {
@@ -10,7 +11,9 @@ const Login = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
-  const { login, error, clearError } = useAuth();
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+  const [tempToken, setTempToken] = useState(null);
+  const { login, loginWith2FA, error, clearError } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -21,12 +24,40 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    clearError();
     const result = await login(formData);
     setLoading(false);
-    if (result.success) {
+    
+    if (result.requireTwoFactor) {
+      // 2FA is required
+      setTwoFactorRequired(true);
+      setTempToken(result.tempToken);
+    } else if (result.success) {
       navigate('/');
     }
   };
+
+  const handle2FASuccess = async (data) => {
+    // Login successful with 2FA
+    loginWith2FA(data);
+    navigate('/');
+  };
+
+  const handle2FACancel = () => {
+    setTwoFactorRequired(false);
+    setTempToken(null);
+  };
+
+  // Show 2FA verification screen
+  if (twoFactorRequired && tempToken) {
+    return (
+      <TwoFactorVerify 
+        tempToken={tempToken}
+        onSuccess={handle2FASuccess}
+        onCancel={handle2FACancel}
+      />
+    );
+  }
 
   return (
     <div className="auth-page">

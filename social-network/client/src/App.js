@@ -19,6 +19,7 @@ import Groups from './components/groups/Groups';
 import Search from './components/search/Search';
 import Resources from './components/resources/Resources';
 import Assignments from './components/assignments/Assignments';
+import TwoFactorSettings from './components/settings/TwoFactorSettings';
 
 import './App.css';
 
@@ -212,6 +213,16 @@ function AppContent() {
             <ProtectedRoute>
               <AppLayout>
                 <Assignments />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/security"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <TwoFactorSettings />
               </AppLayout>
             </ProtectedRoute>
           }
